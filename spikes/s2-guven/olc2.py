@@ -61,12 +61,19 @@ def sina(satirlar):
     assert 0.4 < auroc_yanlis(y, rng.random(len(y))) < 0.6
     mukemmel = isletme(y, y.astype(float))  # %2 hata payı sıranın sonundaki birkaç yanlışın onayına izin verir
     assert mukemmel["otomatik_pay"] >= round(y.mean(), 3) and mukemmel["otomatik_hata"] <= HATA_TAVANI, mukemmel
-    assert isletme(y, (~y).astype(float))["otomatik_pay"] < 0.05
+    if (~y).sum() >= 20:  # yanlış çok azken %2 pay ters skoru bile tümüyle onaylatabilir; sınama anlamını yitirir
+        assert isletme(y, (~y).astype(float))["otomatik_pay"] < 0.05
     print("ölçer sınaması GEÇTİ")
 
 
+def sozluk(s: list[dict]) -> np.ndarray:
+    """S2b'nin önceden kayıtlı birincil skoru: önce çapraz okuma uyuşuyor mu, sonra model güveni."""
+    return np.array([x["capraz"] + x["model_guveni"] / 10 for x in s])
+
+
 def main():
-    veri = json.loads(SATIRLAR.read_text("utf-8"))
+    dosya = SATIRLAR.parent / "s2b-satirlar.json" if "s2b" in sys.argv else SATIRLAR
+    veri = json.loads(dosya.read_text("utf-8"))
     s, belgeler = veri["satirlar"], veri["belgeler"]
     if "sina" in sys.argv:
         sina(s)
@@ -87,11 +94,17 @@ def main():
     rapor["birlesik_isletme"] = isletme(y, p)
     rapor["model_isletme"] = isletme(y, X[:, SINYALLER.index("model_guveni")])
     rapor["ortalama_guven"] = {"temiz": round(float(p[~bozuk].mean()), 3), "bozuk": round(float(p[bozuk].mean()), 3)}
+    q = sozluk(s)
+    rapor["sozluk_auroc"] = round(auroc_yanlis(y, q), 3)
+    rapor["sozluk_isletme"] = isletme(y, q)
+    if bozuk.any() and (~y[bozuk]).any() and y[bozuk].any():
+        rapor["sozluk_foto"] = {"auroc": round(auroc_yanlis(y[bozuk], q[bozuk]), 3), **isletme(y[bozuk], q[bozuk])}
+    rapor["yeterli_orneklem"] = bool((~y).sum() >= 20)
     m = LogisticRegression(max_iter=1000).fit(X, y)
     rapor["katsayilar"] = {ad: round(float(c), 2) for ad, c in zip(SINYALLER, m.coef_[0])}
     for k, v in rapor.items():
         print(k, v)
-    (SATIRLAR.parent / "s2-rapor.json").write_text(json.dumps(rapor, ensure_ascii=False, indent=1), "utf-8")
+    (dosya.parent / dosya.name.replace("satirlar", "rapor")).write_text(json.dumps(rapor, ensure_ascii=False, indent=1), "utf-8")
 
 
 if __name__ == "__main__":

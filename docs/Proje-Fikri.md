@@ -78,7 +78,9 @@ entegrasyonları · el yazısı · model eğitimi/ince ayar · mobil uygulama.
 - **Çıkarım yolu:** LLM (Claude / NIM / yerel) mi, kural + yerleşim mi, karma mı? Maliyet ve self-host'ta LLM'siz çalışma.
 - **Anlam kararları:** belge türü sınıflandırma ve çıkarılan değerin doğrulanması için TypeSafe (Jev) adayı; spike'la denenecek.
 - **Riskli kararlar (spike):** ~~S1 kaynak eşleme~~ ✅ 2026-10-24 (`spikes/s1-kaynak-esleme/SONUC.md`): görsel + kimlikli
-  OCR kelimeleri + alıntı doğrulama; konum CORD %97,1, FATURA %100; OCR RapidOCR. Açık: S2 güven skoru gerçekten yanlışları
-  ayırıyor mu (kalibrasyon; `alinti_uyumu` aday sinyal); S3 başka/yerel modelle ve GPU'suz kalite.
+  OCR kelimeleri + alıntı doğrulama; konum CORD %97,1, FATURA %100; OCR RapidOCR. ~~S2 güven~~ (`spikes/s2-guven/SONUC.md`):
+  CORD'da eşik altı (etiket gürültüsü), sentetikte 1.428'de 4 yanlış → ölçülemedi; tasarıma çevrildi: gerekçeli inceleme
+  tetikleri (iki okuma uyuşmazlığı, düşük model güveni, kural, alıntı, alıntı çakışması), "kalibre güven" iddiası yok, ölçüm
+  v1 teslimatı. Açık: S3 başka/yerel model, çeşitli ikinci okuma, GPU'suz kalite.
 - **Lisans** seçimi (open-core).
 - **Değerlendirme seti:** hangi açık veri setleri (alan + kutu etiketli fatura/fiş), erişim ve kullanım koşulları.

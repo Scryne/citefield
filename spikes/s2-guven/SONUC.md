@@ -1,4 +1,4 @@
-# S2: Güven kalibrasyonu — sonuç (2026-10-24) ❌ ÖNCEDEN YAZILAN EŞİKLERDE GEÇMEDİ
+# S2: Güven kalibrasyonu — sonuç (2026-10-24) ❌ CORD'da geçmedi · ⚪ S2b yetersiz örneklem · tasarıma çevrildi
 
 Plan ve eşikler işten önce `PLAN.md`'de. Veri: CORD v2 doğrulama 25–64 (40 fiş), temiz + bozuk ikiz; D yolu (S1'in C'si +
 model güveni) ve A yolu (ikinci bağımsız okuma), Claude Sonnet, 160 çağrı. 1.004 tahmin, 62 yanlış (temiz 27, bozuk 35);
@@ -48,6 +48,33 @@ veri seti uyuşmuyor.
   model öz beyanı ikincil sıralama.
 - İstem: "yalnız basılı değerler, yazımı düzeltme, basılı olmayan alanı uydurma".
 
-## Sıradaki: S2b
-Aynı soru, etiket gürültüsü olmayan veriyle ve hipotez önceden kayıtlı: sentetik (etiketi üretilmiş) fiş/fatura + temiz/bozuk
-ikiz (ör. `synthetic-receipts-ocr`, Apache-2.0), istem düzeltilmiş, birincil skor = çapraz > model sözlük sırası.
+## S2b: gürültüsüz etiketle (plan `PLAN-S2b.md`) — ⚪ YETERSİZ ÖRNEKLEM (önceden kayıtlı kural)
+`synthetic-receipts-ocr` eval, 40 fiş × temiz + fotoğraf ikizi (perspektif, ışık, solma, gürültü, JPEG), 5 ülke biçimi,
+düzeltilmiş istem ("yalnız basılı, yazımı düzeltme, uydurma"). 160 çağrı.
+
+- **1.428 tahmin, 4 yanlış (%99,7 doğru), atlanan etiket 0/1.424.** Fotoğraf ikizinde de 2/714.
+- Plan "yanlış < 20 → geçti/geçmedi denmez" diyordu: kalibrasyon bu veriyle ölçülemedi. (Birincil sözlük skoru AUROC 0,842,
+  fotoğrafta 0,973; 4 yanlışla anlamsız.)
+- **4 yanlışın hiçbiri okuma hatası değil, hepsi rol karışıklığı:** Alman fişinde "SUMME 37,44" toplam olarak doğru alınıp bir
+  de ara toplam diye yazılmış (3); "MAESTRO £211,87" kartla ödenen tutar "verilen nakit" sanılmış (1). Değerler doğru, rol yanlış.
+- Bu yanlışlarda çapraz okuma **uyuşuyor** (A da aynı hatayı yapıyor): aynı modelin ikinci okuması ilişkili hatayı yakalamaz.
+  Kural da tutuyor (SUMME = Σ satır, tutarlı).
+- Keşif: "basılı tek değer iki farklı role alıntılanamaz" (alıntı çakışması) kuralı 4'ün 1'ini yakaladı, 80 belgede yanlış
+  alarm 0. Hipotez.
+
+**Bağımsız doğrulama:** CORD'daki 62 yanlışın çoğunun etiket gürültüsü olduğu yargısı burada tutuyor; gürültüsüz etikette
+model neredeyse yanılmıyor, kalan hata türü okuma değil anlam (rol).
+
+## S2 genel kararı
+Risk "güven skoru yanlışı ayıramaz" bu iki ölçümle **ne kanıtlandı ne çürütüldü**: CORD'da etiket gürültüsü, sentetikte hata
+azlığı ölçümü engelledi. Spike'ın riski ise netleşti ve tasarıma çevrildi:
+
+- **K-Güven (v1):** alan incelemeye düşer, eğer (1) ikinci okuma uyuşmuyorsa, (2) model güveni eşik altındaysa, (3) alanın
+  girdiği kural tutmuyorsa (grup olarak), (4) alıntı yok ya da değeri kurmuyorsa, (5) aynı basılı değer iki role alıntılanmışsa.
+  Tek bir skora indirgemek v1'de yok; kuyruk nedeni kullanıcıya **gerekçesiyle** gösterilir ("iki okuma farklı: 2.352.480 /
+  2.352.460").
+- **İkinci okuma çeşitli olmalı:** aynı modelin tekrarı ilişkili hatayı kaçırıyor → farklı model ya da farklı girdi (yalnız OCR
+  metni, yalnız görsel). S3'te ölçülecek.
+- **"Kalibre güven" README'de iddia edilmez**, ta ki v1'in değerlendirme koşucusu (bitti ölçütü a) daha zor bir sette
+  (DocILE gerçek fatura, daha ağır bozulma) yeterli yanlışla ölçene kadar. Ölçüm v1'in teslimatı olur.
+- İstem kuralları kalıcı: yalnız basılı değer, yazım düzeltme yok, basılı olmayan alan yok.
