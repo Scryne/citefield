@@ -9,7 +9,7 @@ söyler) + **alıntı doğrulama** (yalnız değerin içinde geçen kelimeler ku
 
 | Veri | Alan | Değer doğru | Konum doğru (merkez) | Konum (IoU ≥ 0,5) | Eşik |
 |---|---|---|---|---|---|
-| CORD v2, 25 gerçek fotoğraf fiş | 273 | %88,3 | **%97,1** | %92,1 | ≥ %80 ✅ |
+| CORD v2, 25 gerçek fotoğraf fiş | 273 | %88,3 (eşdeğerlikle %91,9, bkz. Ek) | **%97,1** | %92,1 | ≥ %80 ✅ |
 | FATURA, 30 şablondan 30 fatura | 155 | %100 | **%100** | %31,0* | ≥ %90 ✅ |
 
 \* FATURA'nın etiket kutusu alan adını da kapsıyor ("Date: 22-Apr-2018"), tahmin yalnız değeri; IoU bu yüzden yapısal
@@ -41,6 +41,19 @@ olarak düşük, esas ölçüt merkez.
 5. **Alıntı doğrulama:** model bazen etiket kelimesini de alıntılıyor ("TOTAL" + "42,500") → kutu ikisini kapsıyor. Değerde
    geçmeyen kelime kutudan düşünce CORD konumu %95,9 → **%97,1** (C), %92,7 → %95,3 (B). Düzeltme öncesi sayılar
    `rapor-*-ham.json`'da.
+
+## Ek (S2 sırasında bulundu): miktar ve tutarlarda eşdeğerlik
+CORD fişteki yazımı saklıyor ("1Prs", "1x", "x1"), model anlamı yazıyor ("1"); S1 ölçeri yazım eşitliği aradığı için değer
+doğruluğunu eksik gösterdi. S2'nin kuralıyla (miktar sayı olarak, tutar rakamlarıyla) kayıtlı çıktılar yeniden puanlandı
+(`spikes/s2-guven/s1_yeniden.py`, yeni çağrı yok):
+
+| Yol | CORD değer (eski → yeni) | CORD konum merkez (eski → yeni) |
+|---|---|---|
+| A | %92,3 → %96,0 | %88,1 → %88,2 |
+| B | %85,0 → %88,3 | %95,3 → %95,4 |
+| C | %88,3 → **%91,9** | %97,1 → **%97,2** |
+
+Karar değişmiyor: konumda C önde, değerde A önde.
 
 ## Ürün kararlarına etkisi
 - **K-OCR:** varsayılan OCR RapidOCR (ONNX, CPU, ~1,6 sn/sayfa fiş). Tesseract varsayılan olmaz.

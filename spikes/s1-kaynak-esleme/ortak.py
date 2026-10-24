@@ -23,6 +23,7 @@ class Kelime:
     text: str
     kutu: tuple[float, float, float, float]  # x0, y0, x1, y1
     satir: tuple[int, int, int]  # block, par, line
+    skor: float = 1.0  # OCR kelime güveni (RapidOCR); eski önbellekte yok
 
 
 @dataclass
@@ -80,12 +81,12 @@ def ocr_rapid(resim: Path) -> list[Kelime]:
     r = _RAPID(str(resim), return_word_box=True)
     out = []
     for s, satir in enumerate(r.word_results or ()):
-        for text, _skor, quad in satir:
+        for text, skor, quad in satir:
             text = text.strip()
             if not text:
                 continue
             xs, ys = [q[0] for q in quad], [q[1] for q in quad]
-            out.append(Kelime(len(out), text, (min(xs), min(ys), max(xs), max(ys)), (0, 0, s)))
+            out.append(Kelime(len(out), text, (min(xs), min(ys), max(xs), max(ys)), (0, 0, s), float(skor)))
     return out
 
 
@@ -95,7 +96,7 @@ MOTORLAR = {"tesseract": ocr, "rapid": ocr_rapid}
 def ocr_onbellek(belge: Belge, motor: str = "rapid") -> list[Kelime]:
     yol = CALISMA / f"ocr-{motor}" / f"{belge.kimlik}.json"
     if yol.exists():
-        return [Kelime(k["id"], k["text"], tuple(k["kutu"]), tuple(k["satir"])) for k in json.loads(yol.read_text("utf-8"))]
+        return [Kelime(k["id"], k["text"], tuple(k["kutu"]), tuple(k["satir"]), k.get("skor", 1.0)) for k in json.loads(yol.read_text("utf-8"))]
     kel = MOTORLAR[motor](belge.resim)
     yol.parent.mkdir(parents=True, exist_ok=True)
     yol.write_text(json.dumps([k.__dict__ for k in kel], ensure_ascii=False), "utf-8")
