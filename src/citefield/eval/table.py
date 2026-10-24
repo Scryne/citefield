@@ -25,8 +25,10 @@ def row(r: dict[str, Any]) -> str:
     first, last = r.get("slice") or [0, r["documents"] - 1]
     model = {"sonnet": "claude-sonnet-5-5", "haiku": "claude-haiku-5-5"}.get(r["model"], r["model"])
     caught = f"{v['wrong_sent_to_review']}/{v['wrong']}" if v["wrong"] else "0/0"
+    # FATURA is numbered by template (1-50), CORD by document index
+    span = f"templates {first + 1}-{last + 1}" if r["dataset"] == "fatura" else f"docs {first}-{last}"
     return (
-        f"| {DATASET.get(r['dataset'], r['dataset'])}, docs {first}-{last} | `{model}` | {pct(a['value_rate'])} "
+        f"| {DATASET.get(r['dataset'], r['dataset'])}, {span} | `{model}` | {pct(a['value_rate'])} "
         f"| {pct(a['location_center'])} | {pct(v['auto_share'])} | {pct(v['auto_error_rate'])} | {caught} "
         f"| ${cost.get(model, 0):.4f} |"
     )

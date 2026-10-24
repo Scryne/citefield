@@ -17,7 +17,7 @@ Durum sütunu session-start hook'u tarafından otomatik okunur — format bozulm
 | 4 | Doğrulama ve inceleme kararı | ✅ Tamamlandı | Kurallar (satır toplamı, ara toplam + vergi = toplam, tarih/para biçimi, VKN/TCKN/IBAN sağlama) + 5 inceleme tetiği; eval'da yakalama oranı ve otomatik onay payı raporlanıyor; otomatik onaylanan yanlışlar listeleniyor |
 | 5 | Depolama, API, dışa aktarım | ✅ Tamamlandı | SQLite + Alembic; REST (yükle, durum, alanlar, düzelt/onayla, dışa aktar); JSON/CSV/XLSX; `citefield extract` CLI; API testleri gerçek bir belgeyi uçtan uca geçiriyor |
 | 6 | İnceleme arayüzü | ✅ Tamamlandı | `DESIGN.md` dolu ve lint'ten geçti; yan yana belge/alanlar, kutu vurgusu, gerekçeli kuyruk, düzelt/kutu yeniden seç/onayla, klavye kısayolları; Playwright uçtan uca testi + `gorsel-dogrulama` dört genişlikte temiz |
-| 7 | Paketleme ve ölçüm yayını | 🔄 Devam Ediyor | `uvx citefield serve` ve `docker compose up` temiz makinede tek komutla açılıyor; README İngilizce, ölçüm tablosu `citefield eval` çıktısından üretiliyor; demo GIF açık veri belgesiyle; `yayin-oncesi` çıkış 0 |
+| 7 | Paketleme ve ölçüm yayını | ✅ Tamamlandı | `uvx citefield serve` ve `docker compose up` temiz makinede tek komutla açılıyor; README İngilizce, ölçüm tablosu `citefield eval` çıktısından üretiliyor; demo GIF açık veri belgesiyle; `yayin-oncesi` çıkış 0 |
 | 8 | Gerçek kullanım | ⏳ Bekliyor | Repo public + PyPI yayını (Scryne onayıyla); lansman gönderileri; ≥ 3 dış kişinin kendi belgesiyle çalıştırdığına dair kanıt; bulgular roadmap'e işlendi |
 
 ## Faz Detayları
@@ -98,7 +98,7 @@ Faz 1 ve son faz şablonla gelir: biri projenin sessizce çürümesini engeller 
   - Demo.
   - `yayin-oncesi`.
 - **Bitti Kriteri:** tabloda.
-- **Notlar:**
+- **Notlar:** ✅ 2026-10-24. Ayrılmış dilim (ayar sırasında hiç bakılmamış) Sonnet: CORD 25–49 değer %88,7 / konum %96,3, otomatik onay %77,3, onaylananlarda hata %0,8 (2 gerçek: iki satıra yayılan ürün adı ilk satırda kesilmiş), yanlışların 10/12'si incelemede; FATURA şablon 31–50 %100 / %100, otomatik onaylı 5 'yanlış'ın hepsi basılı ama etiketsiz değer. Faz 4'ün post-hoc ayarları yeni veride tuttu. README tablosu `citefield.eval.table` ile raporlardan üretiliyor. Haiku'nun ayrılmış dilimi bellek baskısıyla durduruldu, yarım (README'de Haiku sayısı 'ayar dilimi' diye etiketli). Docker tek imaj (1,66 GB) konteynerde API+arayüz+OCR doğrulandı; `docker compose config` geçerli; wheel (arayüz dahil) `uvx --isolated` ile `citefield serve` açtı. Demo GIF yerine ekran görüntüsü (sentetik FATURA faturası). `yayin-oncesi` ağaç taraması 0 bulgu. Geçmişte: commit e-postası (kişisel) ve eski test numaraları → public'ten önce geçmiş temizliği Scryne kararı (Faz 8). Commit kimliği artık noreply.
 
 ### Faz 8: Gerçek kullanım
 - **İşler:**

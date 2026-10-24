@@ -31,6 +31,10 @@ Measured with `citefield eval` on open, labelled datasets. Two reads per documen
 only); cost is the API price of both reads, estimated from Claude's image-token formula.
 
 <!-- eval:start -->
+| Data | Model | Values right | Box on the right words | Auto-approved | Errors among auto-approved | Wrong values sent to review | API cost / doc |
+|---|---|---|---|---|---|---|---|
+| CORD v2 receipts (photos), docs 25-49 | `claude-sonnet-5-5` | 88.7% | 96.3% | 77.3% | 0.8% | 10/12 | $0.0238 |
+| FATURA invoices (synthetic), templates 31-50 | `claude-sonnet-5-5` | 100.0% | 100.0% | 96.4% | 4.7% | 3/8 | $0.0183 |
 <!-- eval:end -->
 
 How to read it:
@@ -40,9 +44,9 @@ How to read it:
 - **Auto-approved / Errors among auto-approved**: the share of extracted values that passed every check, and how many
   of those were still wrong. Everything else went to the review queue.
 - **Wrong values sent to review**: of all wrong values, how many the checks caught.
-- Labels are not perfect. FATURA does not label every printed field, so a correct value with no label counts as wrong
-  here; on CORD, sub-items are easy to confuse with items. Errors that slipped through were classified by hand in
-  [docs/Roadmap.md](docs/Roadmap.md) (phase 4 notes).
+- Every auto-approved wrong value was checked by hand. On CORD, both were item names printed over two lines and cut
+  to the first line. On FATURA, all five were values printed on the invoice that the dataset does not label (FATURA
+  labels only some fields per template), so they count as wrong here although they are right.
 - The checks were tuned on documents 0-24 of CORD and templates 1-30 of FATURA. The rows above are the slices that were
   not looked at while tuning.
 
@@ -74,7 +78,7 @@ Python 3.11 or newer. OCR runs on the CPU (RapidOCR); no GPU is needed unless yo
 
 | Provider | Set | Notes |
 |---|---|---|
-| Anthropic (default) | `ANTHROPIC_API_KEY`, optionally `CITEFIELD_MODEL=claude-haiku-5-5` | Sonnet is the reference; Haiku is about 20x cheaper, reads values as well, places boxes less precisely. |
+| Anthropic (default) | `ANTHROPIC_API_KEY`, optionally `CITEFIELD_MODEL=claude-haiku-5-5` | Sonnet is the reference. Haiku is about 20x cheaper; on the tuning slice it read receipt values better (97.1%) but put fewer boxes on the right words (91.7%). |
 | Any OpenAI-compatible API | `CITEFIELD_PROVIDER=openai`, `OPENAI_API_KEY`, `CITEFIELD_BASE_URL`, `CITEFIELD_MODEL` | OpenAI, OpenRouter, vLLM, NVIDIA NIM. Needs a vision model. |
 | Ollama (private mode) | `CITEFIELD_PROVIDER=ollama`, `CITEFIELD_MODEL=qwen3-vl:8b` | Nothing leaves the machine. In development `qwen3-vl:8b` matched Claude on values but put about 87% of boxes on the right words on receipts (Claude: 97%). Needs a GPU with 8 GB. Text-only models are not supported: they lose about half the values on receipts. |
 
