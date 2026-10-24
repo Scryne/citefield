@@ -18,8 +18,11 @@ test('review a receipt with the keyboard: approve, correct, re-cite, export, del
 
   // ? lists the shortcuts
   await page.keyboard.press('?')
-  await expect(page.getByRole('dialog', { name: 'Keyboard shortcuts' })).toBeVisible()
+  const shortcuts = page.getByRole('dialog', { name: 'Keyboard shortcuts' })
+  await expect(shortcuts).toBeVisible()
   await page.keyboard.press('Escape')
+  // keys pressed inside a dialog are its own; wait until it is gone (slower machines keep it a moment longer)
+  await expect(shortcuts).toBeHidden()
 
   // a: approve the active field
   await page.keyboard.press('a')
