@@ -17,6 +17,11 @@
     {"name": "subtotal", "kind": "amount", "description": "subtotal before tax"},
     {"name": "tax", "kind": "amount", "description": "tax amount; one entry per printed tax amount"},
     {"name": "total", "kind": "amount", "description": "amount due / invoice total"},
-    {"name": "iban", "kind": "id", "description": "payee IBAN, only if printed"}
+    {"name": "iban", "kind": "id", "description": "payee IBAN, only if printed", "check": "iban"}
+  ],
+  "rules": [
+    {"type": "sum", "of": "line.amount", "equals": "subtotal", "fallback": "total"},
+    {"type": "add", "terms": ["subtotal", "tax"], "equals": "total"},
+    {"type": "product", "factors": ["line.quantity", "line.unit_price"], "equals": "line.amount"}
   ]
 }

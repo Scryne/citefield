@@ -16,5 +16,11 @@
     {"name": "total", "kind": "amount", "description": "grand total"},
     {"name": "tendered", "kind": "amount", "description": "cash given"},
     {"name": "change", "kind": "amount", "description": "change returned"}
+  ],
+  "rules": [
+    {"type": "sum", "of": "item.total", "equals": "subtotal", "fallback": "total"},
+    {"type": "add", "terms": ["subtotal", "tax"], "equals": "total"},
+    {"type": "add", "terms": ["tendered"], "minus": ["total"], "equals": "change"},
+    {"type": "product", "factors": ["item.quantity", "item.unit_price"], "equals": "item.total"}
   ]
 }

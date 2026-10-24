@@ -25,5 +25,11 @@
     {"name": "total.menuqty_cnt", "kind": "count", "description": "total quantity"},
     {"name": "total.menutype_cnt", "kind": "count", "description": "number of item types"},
     {"name": "total.total_etc", "kind": "text", "description": "other value in the total section"}
+  ],
+  "rules": [
+    {"type": "sum", "of": "menu.price", "equals": "sub_total.subtotal_price", "fallback": "total.total_price"},
+    {"type": "add", "terms": ["sub_total.subtotal_price", "sub_total.tax_price", "sub_total.service_price"], "minus": ["sub_total.discount_price"], "equals": "total.total_price"},
+    {"type": "add", "terms": ["total.cashprice"], "minus": ["total.total_price"], "equals": "total.changeprice"},
+    {"type": "product", "factors": ["menu.cnt", "menu.unitprice"], "equals": "menu.price"}
   ]
 }

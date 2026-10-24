@@ -24,6 +24,7 @@ from citefield.extract import Extracted, build, extract, parse_fields, primary_p
 from citefield.ingest.cache import read_cached
 from citefield.providers import Provider, ReadResult
 from citefield.schema import load
+from citefield.verify import verify
 
 
 class CachedProvider:
@@ -67,6 +68,21 @@ def _preds(fields: list[Extracted]) -> list[Pred]:
     return [Pred(f.field, f.value, f.box) for f in fields]
 
 
+TRIGGERS = (  # reason text -> trigger, most specific first
+    ("also cited as", "collision"),
+    ("second read", "second_read"),
+    ("confidence", "confidence"),
+    ("does not hold", "rule"),
+    ("check digit", "rule"),
+    ("line item", "row"),
+    ("cited", "citation"),
+)
+
+
+def trigger(reason: str) -> str:
+    return next(t for key, t in TRIGGERS if key in reason)
+
+
 def main(argv: list[str] | None = None) -> dict[str, Any]:
     ap = argparse.ArgumentParser(prog="citefield-eval")
     ap.add_argument("dataset", choices=["cord", "fatura"])
@@ -89,9 +105,24 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         doc = read_cached(item.image, a.data / "cache" / "ingest")
         ex = extract(doc, schema, provider, second=not a.no_second)
         plain, _ = build(parse_fields(ex.reads[0].text), schema, doc, rows=False)
+        preds = _preds(ex.fields)
+        matched = match(item.gold, preds, kind_of, containment=containment)
+        right = {id(m.pred) for m in matched if m.pred is not None}
+        verdict = verify(ex, schema)
+        decided = [
+            {
+                "field": f.field,
+                "value": f.value,
+                "correct": id(p) in right,
+                "status": d.status,
+                "triggers": sorted({trigger(r) for r in d.reasons}),
+            }
+            for f, p, d in zip(ex.fields, preds, verdict.decisions, strict=True)
+        ]
         return {
+            "decided": decided,
             "id": item.id,
-            "with_rows": match(item.gold, _preds(ex.fields), kind_of, containment=containment),
+            "with_rows": matched,
             "without_rows": match(item.gold, _preds(plain), kind_of, containment=containment),
             "citation": Counter(f.citation for f in ex.fields),
             "row": Counter(f.row for f in ex.fields if f.row),
@@ -112,6 +143,12 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         return summarize([m for r in results for m in r[key]])
 
     reads = [rd for r in results for rd in r["reads"]]
+    decided = [dict(d, id=r["id"]) for r in results for d in r["decided"]]
+    wrong = [d for d in decided if not d["correct"]]
+    fired: dict[str, dict[str, int]] = {}
+    for d in decided:
+        for t in d["triggers"]:
+            fired.setdefault(t, {"on_wrong": 0, "on_correct": 0})["on_wrong" if not d["correct"] else "on_correct"] += 1
     costs = [rd.cost_usd for rd in reads if rd.cost_usd is not None]
     report = {
         "dataset": a.dataset,
@@ -124,6 +161,19 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         "citation": dict(sum((r["citation"] for r in results), Counter())),
         "row": dict(sum((r["row"] for r in results), Counter())),
         "dropped_by_type_gate": sum(r["dropped"] for r in results),
+        "review": {
+            "predictions": len(decided),
+            "wrong": len(wrong),
+            "wrong_sent_to_review": sum(d["status"] == "review" for d in wrong),
+            "auto_share": round(sum(d["status"] == "auto" for d in decided) / max(len(decided), 1), 3),
+            "auto_error_rate": round(
+                sum(d["status"] == "auto" for d in wrong) / max(sum(d["status"] == "auto" for d in decided), 1), 3
+            ),
+            "triggers": fired,
+            "wrong_auto_approved": [
+                {k: d[k] for k in ("id", "field", "value")} for d in wrong if d["status"] == "auto"
+            ],
+        },
         "per_document": {
             "input_tokens": round(sum(rd.input_tokens for rd in reads) / len(items)),
             "output_tokens": round(sum(rd.output_tokens for rd in reads) / len(items)),
