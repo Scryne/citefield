@@ -128,8 +128,14 @@ def cord_belgeleri(n: int) -> list[Belge]:
 
 
 CORD_SEMA = (
-    "menu.nm (item name), menu.cnt (quantity), menu.price (line price), menu.unitprice, menu.discountprice, "
-    "menu.sub_nm, menu.sub_cnt, menu.sub_price, sub_total.subtotal_price, sub_total.tax_price, "
-    "sub_total.service_price, sub_total.discount_price, sub_total.etc, total.total_price, total.cashprice, "
-    "total.changeprice, total.creditcardprice, total.menuqty_cnt, total.menutype_cnt, total.emoneyprice, total.total_etc"
+    "menu.nm (item name), menu.num (item code), menu.cnt (quantity), menu.unitprice, menu.price (line price), "
+    "menu.discountprice, menu.vatyn, menu.sub.nm (sub-item / option name), menu.sub.cnt, menu.sub.price, "
+    "sub_total.subtotal_price, sub_total.tax_price, sub_total.service_price, sub_total.discount_price, sub_total.etc, "
+    "total.total_price, total.cashprice, total.changeprice, total.creditcardprice, total.emoneyprice, "
+    "total.menuqty_cnt, total.menutype_cnt, total.total_etc"
 )
+
+
+def alan_adi(ad: str) -> str:
+    """2026-10-24 ilk koşudaki şema yazım hatasını (menu.sub_nm) gerçek CORD adına çevirir."""
+    return ad.replace("menu.sub_", "menu.sub.") if ad else ad

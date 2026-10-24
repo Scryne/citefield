@@ -77,7 +77,8 @@ entegrasyonları · el yazısı · model eğitimi/ince ayar · mobil uygulama.
 - ~~**Rakip farkı**~~ → kapandı (2026-10-24, yukarıda "Fark"). Açık kalan: HN talep sinyali doğrulanamadı.
 - **Çıkarım yolu:** LLM (Claude / NIM / yerel) mi, kural + yerleşim mi, karma mı? Maliyet ve self-host'ta LLM'siz çalışma.
 - **Anlam kararları:** belge türü sınıflandırma ve çıkarılan değerin doğrulanması için TypeSafe (Jev) adayı; spike'la denenecek.
-- **Riskli kararlar (spike):** S1 LLM çıktısını belgedeki kutuya geri bağlama; S2 güven skoru gerçekten yanlışları
-  ayırıyor mu (kalibrasyon); S3 GPU'suz/ucuz çalıştırmada kalite.
+- **Riskli kararlar (spike):** ~~S1 kaynak eşleme~~ ✅ 2026-10-24 (`spikes/s1-kaynak-esleme/SONUC.md`): görsel + kimlikli
+  OCR kelimeleri + alıntı doğrulama; konum CORD %97,1, FATURA %100; OCR RapidOCR. Açık: S2 güven skoru gerçekten yanlışları
+  ayırıyor mu (kalibrasyon; `alinti_uyumu` aday sinyal); S3 başka/yerel modelle ve GPU'suz kalite.
 - **Lisans** seçimi (open-core).
 - **Değerlendirme seti:** hangi açık veri setleri (alan + kutu etiketli fatura/fiş), erişim ve kullanım koşulları.

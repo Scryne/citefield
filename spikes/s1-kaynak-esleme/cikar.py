@@ -11,7 +11,7 @@ from pathlib import Path
 
 from rapidfuzz import fuzz
 
-from ortak import CALISMA, Belge, Kelime, birlesim, normalize
+from ortak import CALISMA, Belge, Kelime, alan_adi, birlesim, normalize
 
 CLAUDE = shutil.which("claude")
 ISCI_DIZIN = Path(tempfile.gettempdir()) / "citefield-s1-isci"
@@ -53,8 +53,17 @@ def claude(prompt: str, gorsel: bool) -> str:
 
 
 def json_ayikla(metin: str) -> list[dict]:
-    m = re.search(r"\{.*\}", metin, re.S)
-    return json.loads(m.group(0))["fields"] if m else []
+    """İlk geçerli JSON nesnesini okur; model arkasına ikinci bir blok ya da açıklama eklese de bozulmaz."""
+    i = metin.find("{")
+    while i != -1:
+        try:
+            nesne, _ = json.JSONDecoder().raw_decode(metin, i)
+            if isinstance(nesne, dict) and "fields" in nesne:
+                return nesne["fields"]
+        except json.JSONDecodeError:
+            pass
+        i = metin.find("{", i + 1)
+    return []
 
 
 def bulanik_kutu(deger: str, kelimeler: list[Kelime], kullanilan: set[int]):
@@ -90,11 +99,17 @@ def tahminler(yol: str, belge: Belge, kelimeler: list[Kelime], sema: str) -> lis
     out, kullanilan = [], set()
     idx = {k.id: k for k in kelimeler}
     for a in alanlar:
-        t = {"alan": a.get("field"), "deger": str(a.get("value", ""))}
+        t = {"alan": alan_adi(a.get("field")), "deger": str(a.get("value", ""))}
         if yol == "A":
             t["kutu"], t["eslesme"] = bulanik_kutu(t["deger"], kelimeler, kullanilan)
         else:
             ids = [i for i in a.get("word_ids") or [] if i in idx]
-            t["kutu"] = birlesim(idx[i].kutu for i in ids) if ids else None
+            t["kutu_ham"] = birlesim(idx[i].kutu for i in ids) if ids else None
+            # Alıntı doğrulama: yalnız değerin içinde geçen kelimeler kutuya girer (etiket kelimesi düşer).
+            hedef = normalize(t["deger"])
+            icinde = [i for i in ids if normalize(idx[i].text) and normalize(idx[i].text) in hedef]
+            t["alinti_uyumu"] = bool(ids) and len(icinde) == len(ids)
+            secilen = icinde or ids
+            t["kutu"] = birlesim(idx[i].kutu for i in secilen) if secilen else None
         out.append(t)
     return out
