@@ -16,8 +16,8 @@ Durum sütunu session-start hook'u tarafından otomatik okunur — format bozulm
 | 3 | Çıkarım ve kanıt | ✅ Tamamlandı | Sağlayıcı arayüzü (Anthropic + OpenAI-uyumlu/Ollama); okuma 1 + okuma 2 + alıntı doğrulama + tip kapısı (K-Satır ölçülüp çıkarıldı); `citefield eval` S1 sayılarını (CORD değer ≥ %90, konum ≥ %95; FATURA ≥ %98/98) yeniden üretiyor; belge başı token/$ raporda |
 | 4 | Doğrulama ve inceleme kararı | ✅ Tamamlandı | Kurallar (satır toplamı, ara toplam + vergi = toplam, tarih/para biçimi, VKN/TCKN/IBAN sağlama) + 5 inceleme tetiği; eval'da yakalama oranı ve otomatik onay payı raporlanıyor; otomatik onaylanan yanlışlar listeleniyor |
 | 5 | Depolama, API, dışa aktarım | ✅ Tamamlandı | SQLite + Alembic; REST (yükle, durum, alanlar, düzelt/onayla, dışa aktar); JSON/CSV/XLSX; `citefield extract` CLI; API testleri gerçek bir belgeyi uçtan uca geçiriyor |
-| 6 | İnceleme arayüzü | 🔄 Devam Ediyor | `DESIGN.md` dolu ve lint'ten geçti; yan yana belge/alanlar, kutu vurgusu, gerekçeli kuyruk, düzelt/kutu yeniden seç/onayla, klavye kısayolları; Playwright uçtan uca testi + `gorsel-dogrulama` dört genişlikte temiz |
-| 7 | Paketleme ve ölçüm yayını | ⏳ Bekliyor | `uvx citefield serve` ve `docker compose up` temiz makinede tek komutla açılıyor; README İngilizce, ölçüm tablosu `citefield eval` çıktısından üretiliyor; demo GIF açık veri belgesiyle; `yayin-oncesi` çıkış 0 |
+| 6 | İnceleme arayüzü | ✅ Tamamlandı | `DESIGN.md` dolu ve lint'ten geçti; yan yana belge/alanlar, kutu vurgusu, gerekçeli kuyruk, düzelt/kutu yeniden seç/onayla, klavye kısayolları; Playwright uçtan uca testi + `gorsel-dogrulama` dört genişlikte temiz |
+| 7 | Paketleme ve ölçüm yayını | 🔄 Devam Ediyor | `uvx citefield serve` ve `docker compose up` temiz makinede tek komutla açılıyor; README İngilizce, ölçüm tablosu `citefield eval` çıktısından üretiliyor; demo GIF açık veri belgesiyle; `yayin-oncesi` çıkış 0 |
 | 8 | Gerçek kullanım | ⏳ Bekliyor | Repo public + PyPI yayını (Scryne onayıyla); lansman gönderileri; ≥ 3 dış kişinin kendi belgesiyle çalıştırdığına dair kanıt; bulgular roadmap'e işlendi |
 
 ## Faz Detayları
@@ -88,7 +88,7 @@ Faz 1 ve son faz şablonla gelir: biri projenin sessizce çürümesini engeller 
   - Onay.
   - Dışa aktarım düğmesi.
 - **Bitti Kriteri:** tabloda.
-- **Notlar:**
+- **Notlar:** ✅ 2026-10-24. DESIGN.md dolu (designmd lint 0 hata/0 uyarı): koyu çalışma alanı + beyaz kağıt, tek vurgu çivit (alıntı), durum renkleri kehribar/yeşil/camgöbeği, IBM Plex Sans/Mono paketli (CDN yok). React 19 + Vite 8 + Tailwind 4 + Base UI (silme onayı, dışa aktarma menüsü) + TanStack Query; derlenmiş arayüz `src/citefield/web`'e çıkar, FastAPI servis eder. Playwright uçtan uca testi (gerçek uygulama, sahte model): onay, düzelt, kutuyu yeniden seç, dışa aktar, sil. Test iki gerçek hata yakaladı: Enter'ın sentetik tıklaması satıra kabarıp formu kapatıyordu (düzeltme kaydedilmiyordu); onaydan sonra seçim kuyruğun sonuna kalıyordu (artık sıradaki inceleme alanına geçiyor). `gorsel-dogrulama` 3 rota × 4 genişlik, 0 sorun. Bilinen sınır: kutuyu yeniden seçme yalnız fareyle (SVG kelimeleri klavyeyle seçilemiyor); değer düzeltme klavyeyle tam.
 
 ### Faz 7: Paketleme ve ölçüm yayını
 - **İşler:**

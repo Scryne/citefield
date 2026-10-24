@@ -1,0 +1,65 @@
+@import "tailwindcss";
+@import "@fontsource/ibm-plex-sans/latin-400.css";
+@import "@fontsource/ibm-plex-sans/latin-ext-400.css";
+@import "@fontsource/ibm-plex-sans/latin-500.css";
+@import "@fontsource/ibm-plex-sans/latin-ext-500.css";
+@import "@fontsource/ibm-plex-sans/latin-600.css";
+@import "@fontsource/ibm-plex-sans/latin-ext-600.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-ext-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+@import "@fontsource/ibm-plex-mono/latin-ext-500.css";
+
+/* Tokens: DESIGN.md frontmatter, exported with `designmd export --format css-tailwind`. */
+@theme {
+  --color-background: #0b0d17;
+  --color-background-glow-1: #2a1b4d;
+  --color-background-glow-2: #0f2a4a;
+  --color-surface: #141726;
+  --color-surface-raised: #1c2033;
+  --color-border: #2c3150;
+  --color-foreground: #eef0f8;
+  --color-muted: #9aa0bc;
+  --color-paper: #ffffff;
+  --color-primary: #6e7bff;
+  --color-primary-fill: #6e7bff33;
+  --color-review: #ffb224;
+  --color-approved: #3dd68c;
+  --color-corrected: #4cc3ff;
+  --color-danger: #ff5a5f;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+/* z-index scale: base 0, sticky 10, overlay 20, popover 30, dialog 40 */
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    /* the global gradient mesh, toned down so it never competes with the page */
+    background-image:
+      radial-gradient(60rem 40rem at 0% 0%, var(--color-background-glow-1), transparent 60%),
+      radial-gradient(50rem 40rem at 100% 100%, var(--color-background-glow-2), transparent 60%);
+    background-attachment: fixed;
+    font-size: 14px;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+@utility glass {
+  background-color: rgb(20 23 38 / 0.72);
+  border-color: rgb(255 255 255 / 0.1);
+  @supports (backdrop-filter: blur(12px)) {
+    background-color: rgb(20 23 38 / 0.5);
+    backdrop-filter: blur(12px);
+  }
+}

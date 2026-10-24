@@ -24,3 +24,6 @@ __pycache__/
 .vscode/*
 !.vscode/extensions.json
 .veri/
+
+# Built review UI (npm run build in ui/), shipped in the wheel, not in git
+src/citefield/web/

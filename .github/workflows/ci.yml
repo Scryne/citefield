@@ -32,3 +32,11 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
+      # end to end: the built UI against the real Python app with a fake model (tests/e2e_server.py)
+      - uses: astral-sh/setup-uv@v7
+      - run: uv sync --locked
+        working-directory: .
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --reporter=line
+        env:
+          CI: "1"
