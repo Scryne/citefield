@@ -10,10 +10,11 @@ import time
 import zipfile
 from pathlib import Path
 
-from citefield.eval.metrics import CENTER_MARGIN, normalize
+from citefield.eval.metrics import CENTER_MARGIN
 from citefield.eval.synthpdf import make_pdf
 from citefield.geometry import Box, center_inside
 from citefield.ingest import read_document
+from citefield.text import normalize
 
 
 def fatura_vocab(data_dir: Path, templates: int = 30) -> list[str]:

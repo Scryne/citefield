@@ -1,0 +1,22 @@
+{
+  "name": "invoice",
+  "description": "invoice",
+  "fields": [
+    {"name": "seller.name", "kind": "text", "description": "seller company name"},
+    {"name": "seller.tax_id", "kind": "id", "description": "seller tax id (VAT, GSTIN, EIN, VKN) as printed"},
+    {"name": "buyer.name", "kind": "text", "description": "buyer company or person name"},
+    {"name": "buyer.tax_id", "kind": "id", "description": "buyer tax id as printed"},
+    {"name": "number", "kind": "id", "description": "invoice number"},
+    {"name": "date", "kind": "date", "description": "invoice date"},
+    {"name": "due_date", "kind": "date", "description": "payment due date"},
+    {"name": "currency", "kind": "text", "description": "currency code or symbol, only if printed"},
+    {"name": "line.description", "kind": "text", "description": "line item description", "group": "line", "anchor": true},
+    {"name": "line.quantity", "kind": "count", "description": "quantity", "group": "line"},
+    {"name": "line.unit_price", "kind": "amount", "description": "unit price", "group": "line"},
+    {"name": "line.amount", "kind": "amount", "description": "line amount", "group": "line"},
+    {"name": "subtotal", "kind": "amount", "description": "subtotal before tax"},
+    {"name": "tax", "kind": "amount", "description": "tax amount; one entry per printed tax amount"},
+    {"name": "total", "kind": "amount", "description": "amount due / invoice total"},
+    {"name": "iban", "kind": "id", "description": "payee IBAN, only if printed"}
+  ]
+}

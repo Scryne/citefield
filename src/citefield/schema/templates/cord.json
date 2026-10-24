@@ -1,0 +1,29 @@
+{
+  "name": "cord",
+  "description": "store receipt (CORD v2 label set, evaluation only)",
+  "fields": [
+    {"name": "menu.nm", "kind": "text", "description": "item name", "group": "menu", "anchor": true},
+    {"name": "menu.num", "kind": "id", "description": "item code/SKU, only if a separate code is printed", "group": "menu"},
+    {"name": "menu.cnt", "kind": "count", "description": "quantity", "group": "menu"},
+    {"name": "menu.unitprice", "kind": "amount", "description": "unit price", "group": "menu"},
+    {"name": "menu.price", "kind": "amount", "description": "line total price", "group": "menu"},
+    {"name": "menu.discountprice", "kind": "amount", "description": "line discount", "group": "menu"},
+    {"name": "menu.vatyn", "kind": "text", "description": "VAT flag printed on the line", "group": "menu"},
+    {"name": "menu.sub.nm", "kind": "text", "description": "sub-item/option name", "group": "menu"},
+    {"name": "menu.sub.cnt", "kind": "count", "description": "sub-item quantity", "group": "menu"},
+    {"name": "menu.sub.price", "kind": "amount", "description": "sub-item price", "group": "menu"},
+    {"name": "sub_total.subtotal_price", "kind": "amount", "description": "subtotal"},
+    {"name": "sub_total.tax_price", "kind": "amount", "description": "tax"},
+    {"name": "sub_total.service_price", "kind": "amount", "description": "service charge"},
+    {"name": "sub_total.discount_price", "kind": "amount", "description": "discount"},
+    {"name": "sub_total.etc", "kind": "text", "description": "other value in the subtotal section"},
+    {"name": "total.total_price", "kind": "amount", "description": "grand total"},
+    {"name": "total.cashprice", "kind": "amount", "description": "cash given"},
+    {"name": "total.changeprice", "kind": "amount", "description": "change returned"},
+    {"name": "total.creditcardprice", "kind": "amount", "description": "paid by card"},
+    {"name": "total.emoneyprice", "kind": "amount", "description": "paid by e-money"},
+    {"name": "total.menuqty_cnt", "kind": "count", "description": "total quantity"},
+    {"name": "total.menutype_cnt", "kind": "count", "description": "number of item types"},
+    {"name": "total.total_etc", "kind": "text", "description": "other value in the total section"}
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "receipt",
+  "description": "store receipt",
+  "fields": [
+    {"name": "merchant", "kind": "text", "description": "store or business name"},
+    {"name": "date", "kind": "date", "description": "purchase date"},
+    {"name": "time", "kind": "text", "description": "purchase time"},
+    {"name": "receipt_no", "kind": "id", "description": "receipt or transaction number"},
+    {"name": "tax_id", "kind": "id", "description": "merchant tax id (VAT, USt-IdNr, P.IVA, SIRET, VKN) as printed"},
+    {"name": "item.name", "kind": "text", "description": "line item name", "group": "item", "anchor": true},
+    {"name": "item.quantity", "kind": "count", "description": "quantity, only if printed", "group": "item"},
+    {"name": "item.unit_price", "kind": "amount", "description": "unit price, only if printed", "group": "item"},
+    {"name": "item.total", "kind": "amount", "description": "line total", "group": "item"},
+    {"name": "subtotal", "kind": "amount", "description": "subtotal before tax"},
+    {"name": "tax", "kind": "amount", "description": "tax amount; one entry per printed tax amount"},
+    {"name": "total", "kind": "amount", "description": "grand total"},
+    {"name": "tendered", "kind": "amount", "description": "cash given"},
+    {"name": "change", "kind": "amount", "description": "change returned"}
+  ]
+}

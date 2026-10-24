@@ -10,30 +10,16 @@ Rules carried over from the spikes (docs: spikes/s1-kaynak-esleme/SONUC.md, spik
 
 from __future__ import annotations
 
-import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
 from citefield.geometry import Box, center_inside, iou
+from citefield.text import digits, normalize, quantity
 
 IOU_THRESHOLD = 0.5
 CENTER_MARGIN = 3.0
 
 Kind = str  # "text" | "amount" | "count" | "date" | "id"
-
-
-def normalize(s: str) -> str:
-    return re.sub(r"[^0-9a-z]", "", str(s).lower())
-
-
-def digits(s: str) -> int | None:
-    d = "".join(ch for ch in str(s) if ch.isdigit())
-    return int(d) if d else None
-
-
-def quantity(s: str) -> float | None:
-    m = re.search(r"\d+(?:[.,]\d+)?", str(s))
-    return float(m.group(0).replace(",", ".")) if m else None
 
 
 def values_equal(kind: Kind, pred: str, gold: str, *, containment: bool = False) -> bool:

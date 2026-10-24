@@ -10,8 +10,8 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from citefield.eval.datasets import Item, cord, fatura
-from citefield.eval.metrics import normalize
 from citefield.ingest import read_document
+from citefield.text import normalize
 
 
 def coverage(items: Iterable[Item]) -> tuple[int, int]:

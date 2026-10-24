@@ -1,0 +1,15 @@
+{
+  "name": "fatura",
+  "description": "invoice (FATURA label set, evaluation only)",
+  "fields": [
+    {"name": "SELLER_NAME", "kind": "text", "description": "seller company name"},
+    {"name": "NUMBER", "kind": "id", "description": "invoice number"},
+    {"name": "DATE", "kind": "date", "description": "invoice date"},
+    {"name": "DUE_DATE", "kind": "date", "description": "payment due date"},
+    {"name": "SUB_TOTAL", "kind": "amount", "description": "subtotal before tax"},
+    {"name": "TAX", "kind": "amount", "description": "tax amount"},
+    {"name": "TOTAL", "kind": "amount", "description": "invoice total"},
+    {"name": "GSTIN_SELLER", "kind": "id", "description": "seller GSTIN/tax id"},
+    {"name": "GSTIN_BUYER", "kind": "id", "description": "buyer GSTIN/tax id"}
+  ]
+}
