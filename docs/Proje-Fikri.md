@@ -16,7 +16,14 @@ lojistik, İK ve sigorta aynı derdi yaşar.
 Ticari çözümler pahalı (pazarın lideri Rossum'un en ucuz planı ~18.000 $/yıl). Açık kaynak tarafında belgeyi
 metne çeviren araçlar var (Docling, Marker), ama **alan bazında güven skoru + belgedeki kaynak konumu + kural
 doğrulaması + insan onay kuyruğu** sunan, kurulup kullanılabilir bir ürün bulunamadı (araştırma kolu, 2026-10-24;
-en büyük OSS IDP reposu py-idp 297★). Unstract, Sparrow, Reducto, LlamaExtract henüz kontrol edilmedi.
+en büyük OSS IDP reposu py-idp 297★). Rakip analizi (`docs/arastirma/rakip-analizi.md`) bunu doğruladı: Unstract
+(7,3k★) inceleme kuyruğunu ve kaynak vurgusunu ücretli sürüme kilitliyor, alan güveni hiçbir sürümde yok; Docling ve
+Marker parser seviyesinde kalıyor; hepsini birleştiren repolar 0★. Ticari tarafta Reducto ($0.02/sf.), Mindee,
+Rossum bunu sunuyor.
+
+**Fark:** inceleme kuyruğu + kaynak kutusu açık çekirdekte, doğrulama birinci sınıf, güven kalibre edilip ölçümü
+yayımlanır, GPU'suz tek komutla kurulur. Türkiye notu: e-Fatura zaten XML; Türk pazarı (yerli rakip ~0,4 TL/belge)
+gelir için zayıf, kitle önce global, Türkiye paketi sonra.
 
 ## Ne yapar
 Kullanıcı belgeyi atar. Ekranın solunda belge, sağında çıkarılan alanlar durur:
@@ -60,7 +67,8 @@ TenderIQ (Docling, OCR, kaynağa izlenebilir analiz), AEGIS (çok kiracılı, RL
 entegrasyonları · el yazısı · model eğitimi/ince ayar · mobil uygulama.
 
 ## Açık Sorular
-- **Rakip farkı:** Unstract, Sparrow, Docling, Reducto, LlamaExtract, Rossum karşılaştırması (araştırma sürüyor).
+- ~~**Rakip farkı**~~ → kapandı (2026-10-24, yukarıda "Fark"). Açık kalan: HN talep sinyali doğrulanamadı.
+- **Dil/kitle:** README, arayüz ve dokümanlar İngilizce mi (global OSS), Türkçe ikinci dil mi?
 - **Çıkarım yolu:** LLM (Claude / NIM / yerel) mi, kural + yerleşim mi, karma mı? Maliyet ve self-host'ta LLM'siz çalışma.
 - **Anlam kararları:** belge türü sınıflandırma ve çıkarılan değerin doğrulanması için TypeSafe (Jev) adayı; spike'la denenecek.
 - **Riskli kararlar (spike):** S1 LLM çıktısını belgedeki kutuya geri bağlama; S2 güven skoru gerçekten yanlışları
