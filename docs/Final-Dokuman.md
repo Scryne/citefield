@@ -117,7 +117,7 @@ belge (PDF/PNG/JPG)
 | Güven skoru yanlışı ayırabilir mi | ⚪ S2 | Ölçülemedi; tasarıma çevrildi, v1'de yakalama oranı ölçülür |
 | Claude'suz çalışır mı | ❌/kısmi S3 | Yerel değer eşit, fiş konumu %87; "gizli mod" + K-Satır |
 | İkinci okuma hatayı yakalar mı | hipotez S3 | Yalnız-görsel yol 4/5, n=5; v1 eval'da ölçülür |
-| PDF metin katmanı yolu | ölçülmedi | Faz 2: FATURA'nın PDF'i yoksa sentetik PDF üretimi ile OCR yoluna karşı kıyas |
+| PDF metin katmanı yolu | ✅ Faz 2 | 30 sentetik PDF: metin katmanı %100 bulma / %100 konum, OCR %98,2 / %97,7; metin katmanı öncelikli |
 | İki okumanın maliyeti | tahmin | Görsel ≈ ⌈g/28⌉·⌈y/28⌉ token (≤ 1568). Sayfa başı iki okuma: Sonnet 5.5 (2/10 $/MTok) ≈ 0,015 $, Haiku 5.5 (0,10/0,50) ≈ 0,001 $. Faz 3: gerçek token ve $ eval raporuna girer; Haiku 5.5 kalitesi ölçülür |
 | K-Satır konumu düzeltir mi | ölçülmedi | Faz 3: yerel kolla CORD konumu yeniden ölçülür |
 | Türkçe/el yazısı | kapsam dışı | v1'de ölçülmez, README'de sınır olarak yazılır |

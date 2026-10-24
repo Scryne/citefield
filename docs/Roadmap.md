@@ -11,9 +11,9 @@ Durum sütunu session-start hook'u tarafından otomatik okunur — format bozulm
 
 | Faz | Adı | Durum | Bitti Kriteri |
 | --- | --- | --- | --- |
-| 1 | İskelet ve sağlık | 🔄 Devam Ediyor | `citefield` paketi (uv) + `ui/` iskeleti; CI (ruff + mypy + pytest + ui build) master'da yeşil; `.github/dependabot.yml` (uv + npm); `config/models.toml`; spike ölçeri `citefield.eval`'e taşındı ve bozuk çıktı sınaması testte geçiyor |
-| 2 | Okuma katmanı | ⏳ Bekliyor | PDF (metin katmanlı + taranmış) ve görselden sayfa görüntüsü + kimlikli kelimeler; CORD'da S1'in OCR kapsaması (%91,6 ± 1) yeniden üretildi; metin katmanı yolu sentetik PDF'te OCR yoluna karşı ölçüldü |
-| 3 | Çıkarım ve kanıt | ⏳ Bekliyor | Sağlayıcı arayüzü (Anthropic + OpenAI-uyumlu/Ollama); okuma 1 + okuma 2 + alıntı doğrulama + K-Satır + tip kapısı; `citefield eval` S1 sayılarını (CORD değer ≥ %90, konum ≥ %95; FATURA ≥ %98/98) yeniden üretiyor; belge başı token/$ raporda |
+| 1 | İskelet ve sağlık | ✅ Tamamlandı | `citefield` paketi (uv) + `ui/` iskeleti; CI (ruff + mypy + pytest + ui build) master'da yeşil; `.github/dependabot.yml` (uv + npm); `config/models.toml`; spike ölçeri `citefield.eval`'e taşındı ve bozuk çıktı sınaması testte geçiyor |
+| 2 | Okuma katmanı | ✅ Tamamlandı | PDF (metin katmanlı + taranmış) ve görselden sayfa görüntüsü + kimlikli kelimeler; CORD'da S1'in OCR kapsaması (%91,6 ± 1) yeniden üretildi; metin katmanı yolu sentetik PDF'te OCR yoluna karşı ölçüldü |
+| 3 | Çıkarım ve kanıt | 🔄 Devam Ediyor | Sağlayıcı arayüzü (Anthropic + OpenAI-uyumlu/Ollama); okuma 1 + okuma 2 + alıntı doğrulama + K-Satır + tip kapısı; `citefield eval` S1 sayılarını (CORD değer ≥ %90, konum ≥ %95; FATURA ≥ %98/98) yeniden üretiyor; belge başı token/$ raporda |
 | 4 | Doğrulama ve inceleme kararı | ⏳ Bekliyor | Kurallar (satır toplamı, ara toplam + vergi = toplam, tarih/para biçimi, VKN/TCKN/IBAN sağlama) + 5 inceleme tetiği; eval'da yakalama oranı ve otomatik onay payı raporlanıyor; otomatik onaylanan yanlışlar listeleniyor |
 | 5 | Depolama, API, dışa aktarım | ⏳ Bekliyor | SQLite + Alembic; REST (yükle, durum, alanlar, düzelt/onayla, dışa aktar); JSON/CSV/XLSX; `citefield extract` CLI; API testleri gerçek bir belgeyi uçtan uca geçiriyor |
 | 6 | İnceleme arayüzü | ⏳ Bekliyor | `DESIGN.md` dolu ve lint'ten geçti; yan yana belge/alanlar, kutu vurgusu, gerekçeli kuyruk, düzelt/kutu yeniden seç/onayla, klavye kısayolları; Playwright uçtan uca testi + `gorsel-dogrulama` dört genişlikte temiz |
@@ -36,7 +36,7 @@ Faz 1 ve son faz şablonla gelir: biri projenin sessizce çürümesini engeller 
   - `config/models.toml`.
   - `citefield.eval`: S1/S2 ölçeri ve eşdeğerlik kuralı (`olc.py`, `s1_yeniden.py`, `guven.esdeger`). Yapı spike'tan kopyalanmaz, ölçülmüş kurallar taşınır. Ölçer sınaması (`olcer_sinama.py`) test olur.
 - **Bitti Kriteri:** tabloda.
-- **Notlar:**
+- **Notlar:** ✅ 2026-10-24 (`66049e4`, CI run 40112951389 iki iş yeşil). Ölçer sınaması ilk halinde bir mutasyonu kaçırdı (bir tahmin iki etikete sayılabiliyordu); test eklendi, dört mutasyon da yakalanıyor. Sağlık nöbeti (`saglik.py`) yalnız Jev ve NIM model kimliklerini deniyor; Anthropic/Ollama kimlikleri `config/models.toml`'da ama nöbet bunları denemiyor (açık). Makinede ANTHROPIC_API_KEY yok: ölçümler `claude-code` sağlayıcısıyla (Claude Code oturumu) koşar.
 
 ### Faz 2: Okuma katmanı
 - **İşler:**
@@ -46,7 +46,7 @@ Faz 1 ve son faz şablonla gelir: biri projenin sessizce çürümesini engeller 
   - Satır gruplama.
   - Önbellek: belge hash'iyle.
 - **Bitti Kriteri:** tabloda.
-- **Notlar:**
+- **Notlar:** ✅ 2026-10-24. Kapsama `citefield.eval.coverage` ile S1'in birebir aynısı: CORD 349/381 = %91,6, FATURA 409/414 = %98,8. Metin katmanı (`citefield.eval.textlayer`, 30 sentetik PDF, 5.461 kelime): bulma %100, konum %100, 0,09 sn/sayfa; aynı sayfalarda OCR %98,2 / %97,7, 2,98 sn/sayfa → metin katmanı varsa o kullanılır. FATURA'da kelime kutusu yok (blok düzeyi), bu yüzden PDF'ler kelime konumu bilinerek üretildi. Satır gruplama OCR'da da dikey merkezle yapılıyor: RapidOCR tespit kutusu bir basılı satırı bölüyor (kalem adı ve fiyat ayrı), K-Satır basılı satıra ihtiyaç duyar. Döndürülmüş PDF sayfası v1'de OCR'a gider. Testler mutasyonla sınandı (9 mutasyon, hepsi yakalanıyor).
 
 ### Faz 3: Çıkarım ve kanıt
 - **İşler:**

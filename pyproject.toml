@@ -5,10 +5,21 @@ description = "Self-hosted document field extraction where every value points to
 readme = "README.md"
 requires-python = ">=3.11"
 license = "AGPL-3.0-only"
-dependencies = []
+dependencies = [
+    "onnxruntime>=1.31.0",
+    "pdfplumber>=0.11.10",
+    "pillow>=13.0.0",
+    "pypdfium2>=5.14.0",
+    "rapidocr>=3.10.0",
+]
 
 [project.scripts]
 citefield = "citefield.cli:main"
+
+[project.optional-dependencies]
+eval = [
+    "pyarrow>=26.0.0",
+]
 
 [build-system]
 requires = ["uv_build>=0.13,<0.14"]
@@ -34,5 +45,10 @@ testpaths = ["tests"]
 dev = [
     "mypy>=2.4.0",
     "pytest>=9.1.1",
+    "reportlab>=5.1.0",
     "ruff>=0.17.2",
 ]
+
+[[tool.mypy.overrides]]
+module = ["pypdfium2.*", "pyarrow.*", "reportlab.*", "rapidocr.*"]
+ignore_missing_imports = true
