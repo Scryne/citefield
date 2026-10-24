@@ -21,10 +21,22 @@ CORD 25 belge, 273 alan; FATURA 30 belge, 155 alan. Tip kapısı bu koşularda h
 - **Yalnız-metin yerel modeller fişte çöküyor:** gürültülü yerleşimde değerin yarısını kaçırıyorlar (%45–50). Temiz faturada yeterliler (%98).
 - **GPU'suz:** küçük metin modeli CPU'da 42 sn/belge ve fişte kullanılamaz kalitede. CPU'da görsel model ölçülemedi: koşu, sistem belleği azaldığı için Claude Code tarafından durduruldu.
 
-## Soru 2 — Çeşitli ikinci okuma: ⏳ koşulmadı
+## Soru 2 — Çeşitli ikinci okuma: ❌ (iki ölçüt de)
 
-`cesitlilik.py` hazır. 80 S2 belgesinde yerel `qwen3-vl:8b` okuması gerekiyor (~25 dk GPU). Ollama sunucusu bellek
-temizliğinde durduruldu; yeniden başlatma Scryne'ın onayını bekliyor.
+S2 CORD verisi (80 belge, Claude D'nin 1.004 alanı; 62 yanlış, 5'i elle sınıflanmış gerçek okuma hatası). Gerçek hata 5 ≥ 5, eşik geçerli.
+
+| İkinci okuma | Gerçek okuma hatasında uyuşmazlık | Tüm yanlışlarda | Doğrularda yanlış alarm |
+|---|---|---|---|
+| Yerel `qwen3-vl:8b` (görsel + OCR) | **2/5** ❌ (eşik ≥ yarı) | 42/62 | **151/942 = %16,0** ❌ (eşik ≤ %15) |
+| Claude A (aynı model, yalnız görsel; S2'de kayıtlı) | 4/5 | 35/62 | 14/942 = %1,5 |
+| A veya yerel | 4/5 | 48/62 | 156/942 = %16,6 |
+
+- **Farklı model, aynı hatayı yaptı:** cord-041-bozuk'ta Claude toplamı 2,352,480 okudu. Yerel model de aynı değeri okudu. Bozulmuş görüntüde iki model aynı yanlışa düştü.
+- **Aynı modelin farklı girdi yolu daha çeşitli çıktı:** yalnız görselden okuma (A), görsel ve OCR'dan okumanın (D) gerçek hatalarının 4/5'ini yakaladı. Bunu doğru alanların yalnız %1,5'inde yanlış alarmla yaptı.
+  - Yorum: D'nin okuması OCR kelimelerine yaslanıyor, A'nınki yaslanmıyor. Çeşitliliği model değil girdi sağlıyor.
+  - Örneklem 5 hata. Bu bir hipotez, karar değil.
+- **Yerel modelin yanlış alarmının kaynağı kendi değer hatası:** fişte değer hatası %7, buna bölütleme farkı ekleniyor. İkinci okuyucu birinciden zayıfsa uyuşmazlık çoğunlukla kendi hatası oluyor.
+- **S2b ile birlikte okunmalı:** S2b'deki rol karışıklıklarını (4/4) A da yakalamadı. Şemadan gelen hatayı aynı şemayı okuyan hiçbir okuyucu yakalamaz. Bunlar için K-Güven'in alıntı çakışması kuralı gerekli.
 
 ## Ürün kararları
 
@@ -33,6 +45,7 @@ temizliğinde durduruldu; yeniden başlatma Scryne'ın onayını bekliyor.
   - Yerel `qwen3-vl:8b`: "gizli mod". Değer kalitesi eşit; fişte konum %87, bu sayı README'de yazılır.
   - Yalnız-metin yerel model varsayılan olamaz.
 - **K-Satır (v1 işi, hipotez):** kalem alanlarında (adet, birim fiyat, tutar) alıntılanan kelime, kalem adıyla aynı OCR satırında olmalı. Değilse aynı satırdaki eşleşen kelimeye çapalanır; o da yoksa kutu verilmez ve alan K-Güven kural 4 ile incelemeye gider. Ölçülmedi; v1'de bu ölçerle doğrulanacak.
+- **K-İkinci okuma (S2'nin "farklı model şart" önerisini düzeltir):** ikinci okuma aynı sağlayıcıyla, farklı girdi yoluyla yapılır: yalnız görsel, OCR kelimesi yok. Farklı model bir zorunluluk değil, isteğe bağlı üçüncü okuma. Yerel modelde ikinci okuma da yerel modelin yalnız-görsel yoludur; ölçülmedi.
 - **K-CPU:** GPU'suz kurulum v1'de desteklenen yol değil. API sağlayıcısı ya da GPU gerekir. CPU görsel ölçümü açık.
 
 ## Kalıcı dersler

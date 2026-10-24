@@ -83,6 +83,8 @@ entegrasyonları · el yazısı · model eğitimi/ince ayar · mobil uygulama.
   tetikleri (iki okuma uyuşmazlığı, düşük model güveni, kural, alıntı, alıntı çakışması), "kalibre güven" iddiası yok, ölçüm
   v1 teslimatı. S3 yerel model (`spikes/s3-yerel-model/SONUC.md`): `qwen3-vl:8b` değerde Claude'a eşit (CORD %93,0),
   konumda eşik altı (%87, tekrarlı değerde yanlış satır alıntısı) → sağlayıcı soyut, yerel "gizli mod", satır tutarlılığı
-  v1 işi; yalnız-metin model fişte %45–50; CPU v1'de yok. Açık: çeşitli ikinci okuma (betik hazır, koşulmadı).
+  v1 işi; yalnız-metin model fişte %45–50; CPU v1'de yok. Çeşitli ikinci okuma: farklı model
+  gerçek hataların 2/5'ini, %16 yanlış alarmla yakaladı ❌; aynı modelin yalnız-görsel yolu 4/5'ini %1,5 alarmla →
+  ikinci okuma = farklı girdi yolu (hipotez, n=5).
 - **Lisans** seçimi (open-core).
 - **Değerlendirme seti:** hangi açık veri setleri (alan + kutu etiketli fatura/fiş), erişim ve kullanım koşulları.
