@@ -1,0 +1,12 @@
+.git
+.veri
+.venv
+.cache
+**/node_modules
+**/__pycache__
+spikes
+docs
+dist
+src/citefield/web
+ui/test-results
+ui/playwright-report

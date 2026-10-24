@@ -85,6 +85,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     ap = argparse.ArgumentParser(prog="citefield-eval")
     ap.add_argument("dataset", choices=["cord", "fatura"])
     ap.add_argument("n", type=int)
+    ap.add_argument("--start", type=int, default=0, help="skip the first documents (held-out slices)")
     ap.add_argument("provider")
     ap.add_argument("model", nargs="?")
     ap.add_argument("--data", type=Path, default=Path(".veri"))
@@ -93,7 +94,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     a = ap.parse_args(argv)
 
     schema = load(a.dataset)
-    items = list(datasets.cord(a.data, a.n) if a.dataset == "cord" else datasets.fatura(a.data, a.n))
+    items = list(datasets.cord(a.data, a.n, a.start) if a.dataset == "cord" else datasets.fatura(a.data, a.n, a.start))
     # FATURA label boxes include the caption ("Total: 1,234"), so values match by containment, as text (S1)
     kind_of = schema.kind_of if a.dataset == "cord" else (lambda _: "text")
     containment = a.dataset == "fatura"
@@ -148,6 +149,7 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     report = {
         "dataset": a.dataset,
         "documents": len(items),
+        "slice": [a.start, a.start + a.n - 1],
         "provider": a.provider,
         "model": provider.model,
         "second_read": not a.no_second,
@@ -175,7 +177,10 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
             "api_estimate_usd": {m: round(sum(r["api"][m] for r in results) / len(items), 5) for m in API_PRICES},
         },
     }
-    out = a.data / "reports" / f"{a.dataset}-{a.n}-{a.provider}-{provider.model}{'-single' if a.no_second else ''}.json"
+    span = f"{a.start}-{a.start + a.n - 1}" if a.start else str(a.n)
+    out = (
+        a.data / "reports" / f"{a.dataset}-{span}-{a.provider}-{provider.model}{'-single' if a.no_second else ''}.json"
+    )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=1), "utf-8")
     print(json.dumps(report, indent=1))

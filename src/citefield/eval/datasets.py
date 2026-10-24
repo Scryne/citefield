@@ -66,11 +66,11 @@ def cord(data_dir: Path, n: int, start: int = 0) -> Iterator[Item]:
         yield Item(f"cord-{i:03d}", r["image"]["bytes"], gold)
 
 
-def fatura(data_dir: Path, n: int) -> Iterator[Item]:
-    """Instance 150 of templates 1..n: one document per layout."""
+def fatura(data_dir: Path, n: int, start: int = 0) -> Iterator[Item]:
+    """Instance 150 of templates start+1 .. start+n: one document per layout (FATURA has 50 templates)."""
     z = zipfile.ZipFile(data_dir / "fatura" / "FATURA2.zip")
     root = "invoices_dataset_final/"
-    for t in range(1, n + 1):
+    for t in range(start + 1, start + n + 1):
         name = f"Template{t}_Instance150"
         im = Image.open(io.BytesIO(z.read(f"{root}images/{name}.jpg"))).convert("RGB")
         h, s = im.height, FATURA_SCALE

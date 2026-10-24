@@ -1,0 +1,19 @@
+services:
+  citefield:
+    build: .
+    ports:
+      - "127.0.0.1:8484:8484"  # v1 has no login: keep it on this machine
+    volumes:
+      - citefield-data:/data
+    environment:
+      CITEFIELD_PROVIDER: ${CITEFIELD_PROVIDER:-anthropic}  # anthropic | openai | ollama
+      CITEFIELD_MODEL: ${CITEFIELD_MODEL:-}
+      CITEFIELD_BASE_URL: ${CITEFIELD_BASE_URL:-}  # e.g. http://host.docker.internal:11434/v1 for Ollama
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+volumes:
+  citefield-data:
