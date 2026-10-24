@@ -138,6 +138,8 @@ same images repeated the same misreads, while the same model without the OCR wor
 - **No login.** v1 is single-user and binds to `127.0.0.1`. Put it behind an authenticating proxy before exposing it.
 - English-language and Latin-script documents only have been measured.
 - The review UI's re-cite mode needs a mouse; editing values works from the keyboard.
+- The `anthropic` provider is covered by unit tests but has not yet been run against the live API; the published
+  numbers were measured through Claude Code (`--provider claude-code`, same Sonnet and Haiku models).
 
 ## Development
 

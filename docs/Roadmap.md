@@ -106,4 +106,4 @@ Faz 1 ve son faz şablonla gelir: biri projenin sessizce çürümesini engeller 
   - Gelen issue'lara cevap.
   - İlk 3 dış kullanıcının kanıtı.
 - **Bitti Kriteri:** tabloda.
-- **Notlar:**
+- **Notlar:** 2026-10-24 Scryne kararı: repo şimdilik private, geçmişteki kişisel commit e-postasına dokunulmuyor (public'ten önce temizlik zorunlu: temiz geçmişle yeniden açma ya da filter-repo); Anthropic API canlı denemesi yapılmadı (README'de not); public/PyPI/lansman/Haiku ayrılmış ölçümü için onay yok, bekliyor.
