@@ -5,17 +5,17 @@ from citefield.verify import same_value, verify
 RECEIPT = load("receipt")
 
 
-def E(field, value, item=None, *, confidence=0.99, evidence=(), citation="exact", row=None):
+def E(field, value, item=None, *, confidence=0.99, evidence=(), citation="exact"):
     ev = tuple(evidence) or (hash((field, value, item)) % 10**6 + 10**6,)  # distinct words unless given
-    return Extracted(field, value, item, confidence, ev, ev, citation, (0, 0, 1, 1), 0, row)
+    return Extracted(field, value, item, confidence, ev, ev, citation, (0, 0, 1, 1), 0)
 
 
 def clean_receipt():
     return [
-        E("item.name", "LATTE", 1, row=None),
-        E("item.total", "4.50", 1, row="ok"),
+        E("item.name", "LATTE", 1),
+        E("item.total", "4.50", 1),
         E("item.name", "MUFFIN", 2),
-        E("item.total", "3.00", 2, row="ok"),
+        E("item.total", "3.00", 2),
         E("subtotal", "7.50"),
         E("tax", "0.60"),
         E("total", "8.10"),
@@ -54,7 +54,7 @@ def test_amounts_agree_across_formats():
 
 def test_failed_sum_flags_every_field_in_it():
     fields = clean_receipt()
-    fields[3] = E("item.total", "3.50", 2, row="ok")  # misread: items now add up to 8.00, not 7.50
+    fields[3] = E("item.total", "3.50", 2)  # misread: items now add up to 8.00, not 7.50
     v = verify(Extraction(fields, second_of(fields)), RECEIPT)
     flagged = {fields[i].field + str(fields[i].item) for i, d in enumerate(v.decisions) if d.status == "review"}
     assert flagged == {"item.total1", "item.total2", "subtotalNone"}
@@ -87,15 +87,13 @@ def test_low_confidence_and_citation_triggers():
         E("subtotal", "7.50", citation="outside"),
         E("tax", "0.60", citation="missing"),
         E("merchant", "COFFEE HOUSE", citation="partial"),
-        E("item.total", "4.50", 1, row="outside"),
         E("tendered", "10.00", confidence=None),
     ]
     v = verify(Extraction(fields, second_of(fields)), RECEIPT)
     reasons = [" | ".join(d.reasons) for d in v.decisions]
     assert "confidence 0.50" in reasons[0]
     assert "do not contain" in reasons[1] and "no words cited" in reasons[2] and "only part" in reasons[3]
-    assert "outside its line item" in reasons[4]
-    assert v.decisions[5].status == "auto"  # no confidence given is not a reason by itself
+    assert v.decisions[4].status == "auto"  # no confidence given is not a reason by itself
 
 
 def test_the_same_words_cited_for_two_roles():
@@ -127,3 +125,16 @@ def test_a_rule_without_its_first_term_is_skipped_not_failed():
     v = verify(Extraction(fields, second_of(fields)), RECEIPT)
     assert all(d.status == "auto" for d in v.decisions), [d.reasons for d in v.decisions]
     assert any(r.rule.startswith("subtotal + tax") and r.outcome == "skipped" for r in v.rules)
+
+
+def test_tax_inclusive_line_prices_may_add_up_to_the_total():
+    """CORD: line prices include tax, the subtotal is printed before tax."""
+    fields = [
+        E("item.name", "TEA", 1),
+        E("item.total", "11,000", 1),
+        E("subtotal", "10,000"),
+        E("tax", "1,000"),
+        E("total", "11,000"),
+    ]
+    v = verify(Extraction(fields, second_of(fields)), RECEIPT)
+    assert all(d.status == "auto" for d in v.decisions), [d.reasons for d in v.decisions]

@@ -11,8 +11,5 @@
     {"name": "TOTAL", "kind": "amount", "description": "invoice total"},
     {"name": "GSTIN_SELLER", "kind": "id", "description": "seller GSTIN/tax id"},
     {"name": "GSTIN_BUYER", "kind": "id", "description": "buyer GSTIN/tax id"}
-  ],
-  "rules": [
-    {"type": "add", "terms": ["SUB_TOTAL", "TAX"], "equals": "TOTAL"}
   ]
 }

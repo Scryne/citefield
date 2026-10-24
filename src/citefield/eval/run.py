@@ -1,7 +1,6 @@
 """End-to-end evaluation on a labelled dataset: ingest, both reads, evidence, then value and location accuracy.
 
 Reads are cached by (provider, model, prompt, images), so re-scoring after a change to evidence rules costs nothing.
-Location is reported with and without K-Satır, so the rule's effect is measured, not assumed.
 
 Usage: python -m citefield.eval.run <cord|fatura> <n> <provider> [model] [--data DIR] [--no-second] [--workers N]
 """
@@ -20,7 +19,7 @@ from typing import Any
 from citefield import providers
 from citefield.eval import datasets
 from citefield.eval.metrics import Pred, Summary, match, summarize
-from citefield.extract import Extracted, build, extract, parse_fields, primary_prompt, secondary_prompt
+from citefield.extract import Extracted, extract, primary_prompt, secondary_prompt
 from citefield.ingest.cache import read_cached
 from citefield.providers import Provider, ReadResult
 from citefield.schema import load
@@ -74,7 +73,6 @@ TRIGGERS = (  # reason text -> trigger, most specific first
     ("confidence", "confidence"),
     ("does not hold", "rule"),
     ("check digit", "rule"),
-    ("line item", "row"),
     ("cited", "citation"),
 )
 
@@ -104,7 +102,6 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     def one(item: datasets.Item) -> dict[str, Any]:
         doc = read_cached(item.image, a.data / "cache" / "ingest")
         ex = extract(doc, schema, provider, second=not a.no_second)
-        plain, _ = build(parse_fields(ex.reads[0].text), schema, doc, rows=False)
         preds = _preds(ex.fields)
         matched = match(item.gold, preds, kind_of, containment=containment)
         right = {id(m.pred) for m in matched if m.pred is not None}
@@ -122,10 +119,8 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         return {
             "decided": decided,
             "id": item.id,
-            "with_rows": matched,
-            "without_rows": match(item.gold, _preds(plain), kind_of, containment=containment),
+            "matches": matched,
             "citation": Counter(f.citation for f in ex.fields),
-            "row": Counter(f.row for f in ex.fields if f.row),
             "dropped": ex.dropped,
             "second": len(ex.second),
             "reads": ex.reads,
@@ -156,10 +151,8 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
         "provider": a.provider,
         "model": provider.model,
         "second_read": not a.no_second,
-        "with_rows": asdict(total("with_rows")),
-        "without_rows": asdict(total("without_rows")),
+        "accuracy": asdict(total("matches")),
         "citation": dict(sum((r["citation"] for r in results), Counter())),
-        "row": dict(sum((r["row"] for r in results), Counter())),
         "dropped_by_type_gate": sum(r["dropped"] for r in results),
         "review": {
             "predictions": len(decided),

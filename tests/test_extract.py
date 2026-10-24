@@ -70,38 +70,6 @@ def test_unknown_fields_and_empty_values_are_ignored():
     assert out == []
 
 
-def _items(price_ids):
-    raw = [
-        f("item.name", n, [ID[r, n]], item=k) for k, (r, n) in enumerate([(1, "LATTE"), (2, "MUFFIN"), (3, "TEA")], 1)
-    ]
-    raw += [f("item.total", "4.50", ids, item=1) for ids in [price_ids]]
-    return raw
-
-
-def test_rows_keep_a_citation_inside_the_item():
-    out, _ = build(_items([ID[1, "4.50"]]), SCHEMA, DOC)
-    assert out[-1].row == "ok" and out[-1].evidence == (ID[1, "4.50"],)
-
-
-def test_rows_move_a_repeated_value_cited_on_another_item():
-    """The S3 failure: item 1's 4.50 cited on TEA's line. The only 4.50 in item 1's rows is the right one."""
-    out, _ = build(_items([ID[3, "4.50"]]), SCHEMA, DOC)
-    assert out[-1].row == "moved" and out[-1].evidence == (ID[1, "4.50"],)
-    assert out[-1].box == next(w.box for w in DOC.words if w.id == ID[1, "4.50"])
-
-
-def test_rows_withdraw_the_box_when_nothing_matches_inside_the_item():
-    raw = _items([ID[3, "4.50"]])
-    raw[-1]["value"], raw[-1]["word_ids"] = "9.99", [ID[3, "4.50"]]
-    out, _ = build(raw, SCHEMA, DOC)
-    assert out[-1].row == "outside" and out[-1].box is None
-
-
-def test_rows_can_be_switched_off_for_measurement():
-    out, _ = build(_items([ID[3, "4.50"]]), SCHEMA, DOC, rows=False)
-    assert out[-1].row is None and out[-1].evidence == (ID[3, "4.50"],)
-
-
 def test_parse_fields_survives_prose_and_a_second_block():
     text = 'Here you go:\n{"fields": [{"field": "total", "value": "1"}]}\nand {"fields": []}'
     assert parse_fields(text) == [{"field": "total", "value": "1"}]
@@ -164,18 +132,9 @@ def test_schema_validation():
         assert load(name).fields
 
 
-def test_rows_withdraw_the_box_when_the_value_repeats_inside_the_item():
-    rows = [["LATTE", "4.50"], ["refill", "4.50"], ["TEA", "2.00"]]
-    words, i = [], 0
-    for line, row in enumerate(rows):
-        for k, text in enumerate(row):
-            words.append(Word(i, text, (10 + 100 * k, line * 30, 60 + 100 * k, line * 30 + 20), 0, line, "ocr"))
-            i += 1
-    doc = Document("sha", [Page(0, 300, 100, b"png", "ocr", words)])
-    raw = [
-        f("item.name", "LATTE", [0], item=1),
-        f("item.name", "TEA", [4], item=2),
-        f("item.total", "4.50", [5], item=1),  # cited on TEA's row; item 1's rows hold 4.50 twice
-    ]
-    out, _ = build(raw, SCHEMA, doc)
-    assert out[-1].row == "outside" and out[-1].box is None
+def test_caption_merged_into_the_value_word_counts_as_cited():
+    words = [Word(0, "Change:9,000", (0, 0, 120, 20), 0, 0, "ocr"), Word(1, "152,000", (0, 30, 70, 50), 0, 1, "ocr")]
+    doc = Document("sha", [Page(0, 200, 100, b"png", "ocr", words)])
+    (change, price), _ = build([f("change", "9,000", [0]), f("item.total", "52,000", [1], item=1)], SCHEMA, doc)
+    assert change.citation == "exact" and change.evidence == (0,)
+    assert price.citation == "outside"  # a missing leading digit is a misread, not a caption

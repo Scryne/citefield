@@ -4,8 +4,11 @@ Read 1 (K-Yol, S1): page images + OCR words with ids; the model cites the ids it
 Read 2 (K-İkinci okuma, S3): the same provider on the images alone. It is only compared with read 1 later (verify);
 S3 found that a different input path caught real misreads (4/5) far better than a different model (2/5).
 
-Boxes come only from cited words (K-Kanıt). A citation that does not contain the value yields no box rather than a
-guessed one, except for the S1 fallback described in `_evidence`.
+Boxes come only from cited words (K-Kanıt), checked by `_evidence`.
+
+K-Satır (S3 hypothesis: line item fields must be cited inside their item's rows) was built and measured on 25 CORD
+receipts and removed: it lowered location from 96.8% to 92.0% (Sonnet) and caught no wrong value. Quantities are printed
+above the item name as often as below, and photographed receipts are skewed enough to break row grouping.
 """
 
 from __future__ import annotations
@@ -41,7 +44,6 @@ class Extracted:
     citation: Citation = "missing"
     box: Box | None = None
     page: int | None = None
-    row: Literal["ok", "moved", "outside"] | None = None  # K-Satır outcome for group fields
 
 
 @dataclass
@@ -166,9 +168,19 @@ def _evidence(value: str, cited: list[int], words: dict[int, Word]) -> tuple[lis
     target = normalize(value)
     inside = [i for i in cited if normalize(words[i].text) and normalize(words[i].text) in target]
     if not inside:
-        return cited, "outside"
+        merged = [i for i in cited if _caption_merged(words[i].text, value)]
+        return (merged, "exact") if merged else (cited, "outside")
     joined = "".join(normalize(words[i].text) for i in sorted(inside))
     return inside, "exact" if joined == target else "partial"
+
+
+def _caption_merged(word: str, value: str) -> bool:
+    """OCR often reads a caption and its value as one word ("Change:9,000", "SUB_TOTAL:1287.37"). The value counts as
+    cited when it is the word's start or end and the boundary is punctuation, so "152,000" never cites "52,000"."""
+    w, v = word.strip(), value.strip()
+    if not v or len(w) <= len(v):
+        return False
+    return (w.endswith(v) and not w[-len(v) - 1].isalnum()) or (w.startswith(v) and not w[len(v)].isalnum())
 
 
 def _place(ids: list[int], words: dict[int, Word]) -> tuple[Box | None, int | None]:
@@ -178,56 +190,7 @@ def _place(ids: list[int], words: dict[int, Word]) -> tuple[Box | None, int | No
     return union(words[i].box for i in ids if words[i].page == page), page
 
 
-def _apply_rows(fields: list[Extracted], schema: Schema, doc: Document) -> None:
-    """K-Satır (S3 hypothesis): a line item field must be cited inside its item's rows, which run from the item's
-    anchor (its name) to the row before the next item's anchor. A citation outside is moved to a unique matching word
-    run inside the rows; if there is none or several, the box is withdrawn."""
-    words = {w.id: w for w in doc.words}
-    by_line: dict[int, list[Word]] = {}
-    for w in doc.words:
-        by_line.setdefault(w.line, []).append(w)
-    for group in {f.group for f in schema.fields if f.group}:
-        anchor = next(f.name for f in schema.fields if f.group == group and f.anchor)
-        starts: dict[int, int] = {}
-        for e in fields:
-            if e.field == anchor and e.item is not None and e.evidence:
-                starts[e.item] = min(starts.get(e.item, 10**9), min(words[i].line for i in e.evidence))
-        order = sorted(set(starts.values()))
-        last_line = max(by_line, default=0)
-        for e in fields:
-            spec = schema.field(e.field)
-            if spec is None or spec.group != group or spec.anchor or e.item not in starts:
-                continue
-            first = starts[e.item]
-            later = [s for s in order if s > first]
-            rows = range(first, (later[0] - 1 if later else last_line) + 1)
-            if e.evidence and all(words[i].line in rows for i in e.evidence):
-                e.row = "ok"
-                continue
-            runs = _matching_runs(e.value, [by_line.get(r, []) for r in rows])
-            if len(runs) == 1:
-                e.evidence, e.row = tuple(runs[0]), "moved"
-                e.box, e.page = _place(list(runs[0]), words)
-            else:
-                e.evidence, e.row, e.box, e.page = (), "outside", None, None
-
-
-def _matching_runs(value: str, rows: list[list[Word]], longest: int = 4) -> list[list[int]]:
-    target = normalize(value)
-    runs = []
-    for row in rows:
-        for a in range(len(row)):
-            joined = ""
-            for b in range(a, min(a + longest, len(row))):
-                joined += normalize(row[b].text)
-                if joined == target:
-                    runs.append([w.id for w in row[a : b + 1]])
-                if len(joined) >= len(target):
-                    break
-    return runs
-
-
-def build(raw: list[dict[str, Any]], schema: Schema, doc: Document, rows: bool = True) -> tuple[list[Extracted], int]:
+def build(raw: list[dict[str, Any]], schema: Schema, doc: Document) -> tuple[list[Extracted], int]:
     words = {w.id: w for w in doc.words}
     out, dropped = [], 0
     for a in raw:
@@ -247,8 +210,6 @@ def build(raw: list[dict[str, Any]], schema: Schema, doc: Document, rows: bool =
                 name, value, item, _float(a.get("confidence")), tuple(cited), tuple(evidence), citation, box, page
             )
         )
-    if rows:
-        _apply_rows(out, schema, doc)
     return out, dropped
 
 

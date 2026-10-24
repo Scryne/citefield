@@ -81,7 +81,7 @@ belge (PDF/PNG/JPG)
 
   Her tetik arayüzde gerekçe olarak görünür.
 - **K-İkinci okuma (S3):** OCR'sız, yalnız görselden okuma. Gerçek okuma hatalarının 4/5'ini %1,5 yanlış alarmla yakaladı. Farklı model 2/5'ini %16 ile yakaladı. n=5, v1 ölçümü bunu doğrular ya da çürütür.
-- **K-Satır (S3, hipotez):** kalem alanının alıntısı kalem adıyla aynı satırda olmalı. Yerel modelin konum açığı (%87) tekrarlı değerin yanlış satırdan alıntılanmasından geliyor.
+- **K-Satır (S3 hipotezi) — çürütüldü (Faz 3):** konumu %96,8 → %92,0 düşürdü, yanlış yakalamadı (adet kalem adının üstünde de basılıyor, fotoğraf eğikliği satırı bozuyor). Kaldırıldı.
 - **K-Şema (S3):** şema alanları tipli ve açıklamalı. Tipler: text, amount, count, date, id. Etiket kelimesini değer yazmak yasak. "Basılı değilse yazma, yazımı düzeltme" kuralı istemde.
 - **K-İstem (S2):** istem modeli basılı olmayan değeri üretmeye zorlamaz. S2'de "adet 1 olsa da yaz" demek 14 uydurma üretti.
 - **Sağlayıcı arayüzü:** `read(images, prompt, json_schema) -> (json, usage)`. Kullanım ve maliyet her belgeye kaydedilir.
@@ -116,10 +116,10 @@ belge (PDF/PNG/JPG)
 | Model kutuyu doğru yere bağlayabilir mi | ✅ S1 | CORD %97,1, FATURA %100 (`spikes/s1-kaynak-esleme/SONUC.md`) |
 | Güven skoru yanlışı ayırabilir mi | ⚪ S2 | Ölçülemedi; tasarıma çevrildi, v1'de yakalama oranı ölçülür |
 | Claude'suz çalışır mı | ❌/kısmi S3 | Yerel değer eşit, fiş konumu %87; "gizli mod" + K-Satır |
-| İkinci okuma hatayı yakalar mı | hipotez S3 | Yalnız-görsel yol 4/5, n=5; v1 eval'da ölçülür |
+| İkinci okuma hatayı yakalar mı | ✅ Faz 4 | En isabetli tetik: Sonnet CORD 4 yanlış / 1 doğru, Haiku 2 / 0 |
 | PDF metin katmanı yolu | ✅ Faz 2 | 30 sentetik PDF: metin katmanı %100 bulma / %100 konum, OCR %98,2 / %97,7; metin katmanı öncelikli |
-| İki okumanın maliyeti | tahmin | Görsel ≈ ⌈g/28⌉·⌈y/28⌉ token (≤ 1568). Sayfa başı iki okuma: Sonnet 5.5 (2/10 $/MTok) ≈ 0,015 $, Haiku 5.5 (0,10/0,50) ≈ 0,001 $. Faz 3: gerçek token ve $ eval raporuna girer; Haiku 5.5 kalitesi ölçülür |
-| K-Satır konumu düzeltir mi | ölçülmedi | Faz 3: yerel kolla CORD konumu yeniden ölçülür |
+| İki okumanın maliyeti | ✅ Faz 3 | API tahmini iki okuma: Sonnet 5.5 ~0,02 $/belge, Haiku 5.5 ~0,001 $/belge. Haiku fişte değerde daha iyi (%97,1), konumda zayıf (%91,7); varsayılan Sonnet, Haiku README'de ekonomi seçeneği |
+| K-Satır konumu düzeltir mi | ❌ Faz 3 | Düşürdü (%96,8 → %92,0); kaldırıldı. Yerel modelin %87 konumu için çözüm açık |
 | Türkçe/el yazısı | kapsam dışı | v1'de ölçülmez, README'de sınır olarak yazılır |
 | Talep (3 dış kullanıcı) | açık | Faz 8 lansman; HN talep sinyali doğrulanamamıştı |
 

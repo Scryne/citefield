@@ -13,9 +13,9 @@ Durum sütunu session-start hook'u tarafından otomatik okunur — format bozulm
 | --- | --- | --- | --- |
 | 1 | İskelet ve sağlık | ✅ Tamamlandı | `citefield` paketi (uv) + `ui/` iskeleti; CI (ruff + mypy + pytest + ui build) master'da yeşil; `.github/dependabot.yml` (uv + npm); `config/models.toml`; spike ölçeri `citefield.eval`'e taşındı ve bozuk çıktı sınaması testte geçiyor |
 | 2 | Okuma katmanı | ✅ Tamamlandı | PDF (metin katmanlı + taranmış) ve görselden sayfa görüntüsü + kimlikli kelimeler; CORD'da S1'in OCR kapsaması (%91,6 ± 1) yeniden üretildi; metin katmanı yolu sentetik PDF'te OCR yoluna karşı ölçüldü |
-| 3 | Çıkarım ve kanıt | 🔄 Devam Ediyor | Sağlayıcı arayüzü (Anthropic + OpenAI-uyumlu/Ollama); okuma 1 + okuma 2 + alıntı doğrulama + K-Satır + tip kapısı; `citefield eval` S1 sayılarını (CORD değer ≥ %90, konum ≥ %95; FATURA ≥ %98/98) yeniden üretiyor; belge başı token/$ raporda |
-| 4 | Doğrulama ve inceleme kararı | ⏳ Bekliyor | Kurallar (satır toplamı, ara toplam + vergi = toplam, tarih/para biçimi, VKN/TCKN/IBAN sağlama) + 5 inceleme tetiği; eval'da yakalama oranı ve otomatik onay payı raporlanıyor; otomatik onaylanan yanlışlar listeleniyor |
-| 5 | Depolama, API, dışa aktarım | ⏳ Bekliyor | SQLite + Alembic; REST (yükle, durum, alanlar, düzelt/onayla, dışa aktar); JSON/CSV/XLSX; `citefield extract` CLI; API testleri gerçek bir belgeyi uçtan uca geçiriyor |
+| 3 | Çıkarım ve kanıt | ✅ Tamamlandı | Sağlayıcı arayüzü (Anthropic + OpenAI-uyumlu/Ollama); okuma 1 + okuma 2 + alıntı doğrulama + tip kapısı (K-Satır ölçülüp çıkarıldı); `citefield eval` S1 sayılarını (CORD değer ≥ %90, konum ≥ %95; FATURA ≥ %98/98) yeniden üretiyor; belge başı token/$ raporda |
+| 4 | Doğrulama ve inceleme kararı | ✅ Tamamlandı | Kurallar (satır toplamı, ara toplam + vergi = toplam, tarih/para biçimi, VKN/TCKN/IBAN sağlama) + 5 inceleme tetiği; eval'da yakalama oranı ve otomatik onay payı raporlanıyor; otomatik onaylanan yanlışlar listeleniyor |
+| 5 | Depolama, API, dışa aktarım | 🔄 Devam Ediyor | SQLite + Alembic; REST (yükle, durum, alanlar, düzelt/onayla, dışa aktar); JSON/CSV/XLSX; `citefield extract` CLI; API testleri gerçek bir belgeyi uçtan uca geçiriyor |
 | 6 | İnceleme arayüzü | ⏳ Bekliyor | `DESIGN.md` dolu ve lint'ten geçti; yan yana belge/alanlar, kutu vurgusu, gerekçeli kuyruk, düzelt/kutu yeniden seç/onayla, klavye kısayolları; Playwright uçtan uca testi + `gorsel-dogrulama` dört genişlikte temiz |
 | 7 | Paketleme ve ölçüm yayını | ⏳ Bekliyor | `uvx citefield serve` ve `docker compose up` temiz makinede tek komutla açılıyor; README İngilizce, ölçüm tablosu `citefield eval` çıktısından üretiliyor; demo GIF açık veri belgesiyle; `yayin-oncesi` çıkış 0 |
 | 8 | Gerçek kullanım | ⏳ Bekliyor | Repo public + PyPI yayını (Scryne onayıyla); lansman gönderileri; ≥ 3 dış kişinin kendi belgesiyle çalıştırdığına dair kanıt; bulgular roadmap'e işlendi |
@@ -57,7 +57,7 @@ Faz 1 ve son faz şablonla gelir: biri projenin sessizce çürümesini engeller 
   - Alıntı doğrulama, K-Satır, tip kapısı.
   - Eval bağdaştırıcıları: CORD, FATURA, sentetik fiş.
 - **Bitti Kriteri:** tabloda. K-Satır'ın yerel kolda CORD konumunu %87'den nereye taşıdığı raporlanır (eşik yok, ölçüm).
-- **Notlar:**
+- **Notlar:** ✅ 2026-10-24. `citefield.eval.run`, claude-code sağlayıcısı, okumalar önbellekte (`.veri/cache/reads`). Sonnet: CORD 25 değer %91,9 / konum %96,8; FATURA 30 %100 / %100 (S1: %91,9 / %97,2, %100 / %100). Haiku 5.5: CORD %97,1 / %91,7, FATURA %100 / %100. API tahmini (görsel token formülü, iki okuma): Sonnet ~0,02 $/belge, Haiku ~0,001 $/belge. **K-Satır çürütüldü**: konumu Sonnet'te %96,8 → %92,0, Haiku'da %91,7 → %87,5 düşürdü, hiç yanlış yakalamadı. Nedenler: adet/fiyat kalem adının üstünde de basılıyor (cord-008), fotoğraf eğikliği satır gruplamayı bozuyor (cord-024). Kod kaldırıldı. Yerel modelin %87 konum açığı açık kalıyor. Açık: Anthropic sağlayıcısı (structured outputs + görsel) gerçek anahtarla denenmedi (anahtar Scryne onayında); bir `claude -p` çağrısı bir kez anlık hata verdi, yeniden koşuda geçti (önbellek sayesinde kayıp yok).
 
 ### Faz 4: Doğrulama ve inceleme kararı
 - **İşler:**
@@ -67,7 +67,7 @@ Faz 1 ve son faz şablonla gelir: biri projenin sessizce çürümesini engeller 
   - Model güveni eşiği.
   - Karar ve gerekçe listesi.
 - **Bitti Kriteri:** tabloda. Bu fazda önceden kayıtlı bir hedef konmaz (S2'den ders: etiket gürültüsü ölçümü bozar). Sayılar olduğu gibi yayımlanır, otomatik onaylanan her yanlış elle sınıflandırılır.
-- **Notlar:**
+- **Notlar:** ✅ 2026-10-24. Ölçüm (otomatik onay payı, onaylananlarda hata, yanlışlardan incelemeye giden): Sonnet CORD %77,9 · %2,4 · 7/12; Haiku CORD %71,0 · %0,5 · 3/4; Sonnet FATURA %96,3 · %3,2 · 1/6; Haiku FATURA %86,3 · %2,8 · 9/13. Otomatik onaylanan yanlışların elle sınıfı: FATURA'dakilerin hepsi etiketsiz ama basılı değer (FATURA etiketleri eksiksiz değil); CORD Sonnet 5 gerçek (cord-022 alt kalem → ana kalem rol karışıklığı ×4 ve '.5' → '5', cord-002 '50%' düşmüş), Haiku 1 gerçek (cord-002). Tetik isabeti: ikinci okuma en kesin (Sonnet CORD 4 yanlış / 1 doğru), model güveni geniş ama gürültülü (7 / 35), alıntı tetiği yalnız doğrularda (12), kural 1 / 16. Düzeltmeler ölçümden sonra: OCR'ın etiketle birleştirdiği kelime ('Change:9,000') alıntı sayılır; vergi dahil kalem toplamı genel toplamı tutarsa kural geçer (CORD); FATURA'da 'ara toplam + vergi = toplam' kuralı kaldırıldı (indirim satırı şemada yok). Bunlar aynı verideki post-hoc ayarlar: Faz 7'de ayrı bir belge diliminde (CORD 25–50) yeniden ölçülmeden README'ye girmez. VKN sağlama hanesi yayımlanmış bir VKN'yle doğrulanmadı.
 
 ### Faz 5: Depolama, API, dışa aktarım
 - **İşler:**

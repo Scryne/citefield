@@ -6,7 +6,7 @@ field goes to review if any trigger fires, and the reviewer sees which ones did.
 1. The second read (images only, no OCR words) disagrees or has no counterpart.
 2. The model's own confidence is below the threshold.
 3. An arithmetic rule the field takes part in does not hold, or its check digit fails.
-4. The citation is missing, does not contain the value, covers only part of it, or lies outside its line item.
+4. The citation is missing, does not contain the value, or covers only part of it.
 5. The same printed words are cited for two different fields (S2b: role confusion, e.g. card payment as cash).
 """
 
@@ -132,6 +132,11 @@ def _check_rules(fields: list[Extracted], schema: Schema, decisions: list[Decisi
                 out.append(RuleResult(text, "skipped"))
                 continue
             lhs = sum((v for _, v in items), Decimal(0))
+            alt = values.get(r.fallback or "") if not fallback else None
+            if alt and abs(lhs - alt[0][1]) <= _tolerance(alt[0][1]):
+                # tax-inclusive line prices add up to the total, not to the pre-tax subtotal (CORD, Indonesia)
+                out.append(RuleResult(text, "holds", "matches the fallback"))
+                continue
             if fallback and abs(lhs - target[0][1]) > _tolerance(target[0][1]):
                 # without a subtotal, tax or service may sit between items and total: a match is evidence, a
                 # mismatch is not (the false alarm this branch prevents was caught by a test, 2026-10-24)
@@ -186,8 +191,6 @@ def verify(ex: Extraction, schema: Schema, *, min_confidence: float = MIN_CONFID
             d.flag(f"model confidence {f.confidence:.2f} is below {min_confidence:.2f}")
         if f.citation in CITATION_REASON:
             d.flag(CITATION_REASON[f.citation])
-        if f.row == "outside":
-            d.flag("cited outside its line item")
         spec = schema.field(f.field)
         if spec and spec.check and not CHECKS[spec.check](f.value):
             d.flag(f"{spec.check.upper()} check digit fails")
