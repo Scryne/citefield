@@ -1,12 +1,12 @@
 ---
-proje: Okur
+proje: Citefield
 created: 2026-10-24
 type: proje-fikri
 status: taslak
 ---
-# Okur — Proje Fikri
+# Citefield — Proje Fikri
 
-> Çalışma adı. Ad çakışması kontrol edilmedi; denetimde kesinleşir.
+> Çalışma adı "Okur" idi; 2026-10-24 denetiminde "Citefield" seçildi (GitHub, PyPI, npm boş; ad kontrolü `docs/arastirma/rakip-analizi.md` ekinde).
 
 ## Problem
 Şirketlere her gün PDF, fotoğraf ve tarama olarak fatura, irsaliye, banka ekstresi, form gelir. Biri bunları
@@ -69,7 +69,7 @@ entegrasyonları · el yazısı · model eğitimi/ince ayar · mobil uygulama.
 
 ## Kararlar (denetim, 2026-10-24)
 - **Dil:** İngilizce (README, arayüz, doküman); Türkçe arayüz ikinci dil olarak sonra.
-- **Ad:** "Okur" çalışma adı; İngilizce ad aranıyor (aday + çakışma kontrolü), Scryne seçer.
+- **Ad:** Citefield ("cite" + "field": kaynağını gösteren alan). Elenen: Tracefield (rakip), Ledgerlens, Provena, Docproof, Sightline (dolu), Fieldtrace (rakibe çok yakın).
 - **Repo:** v1'e kadar private GitHub reposu; public'e geçiş lansmanda, `yayin-oncesi` kapısından sonra.
 - **Değerlendirme verisi:** yalnız açık veri setleri. Kişisel veri içeren belge repoya girmez.
 

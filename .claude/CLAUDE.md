@@ -1,4 +1,4 @@
-# Okur
+# Citefield
 
 Bu proje Scryne'ın Proje Çalışma Akışı'nı takip eder (bkz. global `~/.claude/CLAUDE.md`, ve
 detaylı gerekçeler için ScryneOS vault'unda `🧠 500-Knowledge/Proje-Calisma-Akisi.md`).
@@ -9,19 +9,19 @@ detaylı gerekçeler için ScryneOS vault'unda `🧠 500-Knowledge/Proje-Calisma
 bunu okuyup bağlama enjekte eder — nerede kaldığımızı sormana gerek kalmaz. Bir aşama
 bittiğinde `asama` alanını sırayla güncelle: `fikir` → `denetim` → `finalizasyon` → `roadmap`
 → `uygulama` → `tamamlandi`. Aynı anda ScryneOS vault'undaki
-`🏰 300-Projects/Okur.md` index notunu da güncelle (frontmatter `asama`/`modified` +
+`🏰 300-Projects/Citefield.md` index notunu da güncelle (frontmatter `asama`/`modified` +
 `**Aşama:**` satırı — vault oturumu bunu okuyarak projeyi bilir).
 
 Hook'lar (`.claude/hooks/`) `proje-baslat` şablonunun birebir kopyasıdır; burada elle
 değiştirilmez. Kanonik roadmap `docs/Roadmap.md` dışında bir dosyaysa `state.json`'a
-`"roadmap": "docs/<dosya>.md"` yazılır, iki hook da onu Okur.
+`"roadmap": "docs/<dosya>.md"` yazılır, iki hook da onu Citefield.
 
 ## Dosyalar
 
 - `docs/Proje-Fikri.md` — ilk fikir
 - `docs/Final-Dokuman.md` — nihai kararlar (teknoloji stack, mimari, riskler)
 - `docs/Roadmap.md` — fazlı yol haritası; her faz "Durum" sütunuyla takip edilir, hook bunu
-  otomatik Okur
+  otomatik Citefield
 - `DESIGN.md` (proje kökünde) — bu projeye özel frontend kimliği. Kesin değerler
   frontmatter'da, gerekçe Markdown'da.
 

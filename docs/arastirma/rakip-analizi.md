@@ -1,5 +1,5 @@
 ---
-proje: Okur
+proje: Citefield
 created: 2026-10-24
 type: arastirma
 ---
@@ -17,7 +17,7 @@ Parçalar dağınık; ticari tarafta (Reducto, LlamaExtract, Mindee, Rossum) var
 |---|---|---|---|---|---|---|
 | Unstract | AGPL-3.0 / 7,3k / 10-23 | yok | yalnız Cloud | HITL yalnız Cloud/Ent. | LLMChallenge yalnız Cloud | Cloud $499/ay'dan, ≥8 GB RAM |
 | Sparrow | GPL-3.0 / 5,2k / 10-08 | yok | opsiyonel | yok | `--validation` | |
-| Docling | MIT / 69,5k / 10-23 | parser seviyesi | var | yok | yok | kütüphane; Okur'un girdi katmanı adayı |
+| Docling | MIT / 69,5k / 10-23 | parser seviyesi | var | yok | yok | kütüphane; Citefield'un girdi katmanı adayı |
 | Marker / Surya | Apache-2.0 kod, ağırlıklar Open Rail-M / 40,6k / 21,5k | Surya satır OCR güveni | polygon | yok | yok | Datalab extraction $6–20/1000 sf. |
 | Zerox | MIT / 12,2k / 2025-05 (durgun) | yok | yok | yok | yok | |
 | Unstructured | Apache-2.0 / 15,6k | yok | — | yok | yok | $0.015/sf. |
@@ -61,5 +61,10 @@ support.humansignal.com (Label Studio review Enterprise).
   imzalı webhook. Fiyat: $0 (5 belge), $49/ay (500), $199/ay (2.500); hepsi erken erişimde ücretsiz. "Runtime MIT" diyor
   ama GitHub bağlantısı yok; ürünün geri kalanı kapalı. Alan bazında güven skorunun anlamı açıklanmamış.
 - **LedgerLens SDK** (npm, 2026-01): "Document Intelligence API with math verification", repo 0xShortx/ledgerlens.
-- Etki: konsept doğrulandı ve 2026'da kalabalıklaşıyor. Okur'un farkı açık kaynak olmasında kalıyor: tüm ürün (inceleme
+- Etki: konsept doğrulandı ve 2026'da kalabalıklaşıyor. Citefield'un farkı açık kaynak olmasında kalıyor: tüm ürün (inceleme
   kuyruğu dahil) açık, self-host tek komut, kalibrasyon ve doğruluk açık veri setlerinde ölçülüp yayımlanıyor.
+
+## Ad kontrolü (2026-10-24)
+Citefield, Fieldtrace, Boxproof: GitHub kullanıcı/org, PyPI, npm boş; belge/AI alanında aynı adlı ürün bulunmadı (web araması
+bu üçünde eksik kaldı). Dolu: Tracefield (doğrudan rakip), Ledgerlens (npm "Document Intelligence API with math verification"),
+Provena (PyPI + org), Docproof (PyPI + npm), Sightline. Fieldtrace boş ama rakip adına çok yakın → elendi. Seçim: **Citefield**.

@@ -1,10 +1,10 @@
 ---
-proje: Okur
+proje: Citefield
 created: 2026-10-24
 type: roadmap
 status: aktif
 ---
-# Okur — Roadmap
+# Citefield — Roadmap
 
 Durum sütunu session-start hook'u tarafından otomatik okunur — format bozulmasın:
 ⏳ Bekliyor / 🔄 Devam Ediyor / ✅ Tamamlandı / ⛔ Engelli.

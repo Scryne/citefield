@@ -1,10 +1,10 @@
 ---
-proje: Okur
+proje: Citefield
 created: 2026-10-24
 type: final-dokuman
 status: taslak
 ---
-# Okur — Final Doküman
+# Citefield — Final Doküman
 
 ## Özet
 (Proje fikrinin netleşmiş, nihai hali — tek paragraf)
