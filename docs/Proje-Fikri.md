@@ -81,6 +81,8 @@ entegrasyonları · el yazısı · model eğitimi/ince ayar · mobil uygulama.
   OCR kelimeleri + alıntı doğrulama; konum CORD %97,1, FATURA %100; OCR RapidOCR. ~~S2 güven~~ (`spikes/s2-guven/SONUC.md`):
   CORD'da eşik altı (etiket gürültüsü), sentetikte 1.428'de 4 yanlış → ölçülemedi; tasarıma çevrildi: gerekçeli inceleme
   tetikleri (iki okuma uyuşmazlığı, düşük model güveni, kural, alıntı, alıntı çakışması), "kalibre güven" iddiası yok, ölçüm
-  v1 teslimatı. Açık: S3 başka/yerel model, çeşitli ikinci okuma, GPU'suz kalite.
+  v1 teslimatı. S3 yerel model (`spikes/s3-yerel-model/SONUC.md`): `qwen3-vl:8b` değerde Claude'a eşit (CORD %93,0),
+  konumda eşik altı (%87, tekrarlı değerde yanlış satır alıntısı) → sağlayıcı soyut, yerel "gizli mod", satır tutarlılığı
+  v1 işi; yalnız-metin model fişte %45–50; CPU v1'de yok. Açık: çeşitli ikinci okuma (betik hazır, koşulmadı).
 - **Lisans** seçimi (open-core).
 - **Değerlendirme seti:** hangi açık veri setleri (alan + kutu etiketli fatura/fiş), erişim ve kullanım koşulları.

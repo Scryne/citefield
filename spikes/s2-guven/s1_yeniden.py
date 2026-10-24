@@ -26,9 +26,10 @@ def eslestir(gercek, tahmin):
     return sonuc
 
 
-belgeler = cord_belgeleri(25)
-for yol in "ABC":
-    es = []
-    for b in belgeler:
-        es += eslestir(b.alanlar, tahminler(yol, b, ocr_onbellek(b), CORD_SEMA))
-    print(yol, olc.ozet(es))
+if __name__ == "__main__":
+    belgeler = cord_belgeleri(25)
+    for yol in "ABC":
+        es = []
+        for b in belgeler:
+            es += eslestir(b.alanlar, tahminler(yol, b, ocr_onbellek(b), CORD_SEMA))
+        print(yol, olc.ozet(es))
