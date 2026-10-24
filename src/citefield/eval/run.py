@@ -23,7 +23,7 @@ from citefield.extract import Extracted, extract, primary_prompt, secondary_prom
 from citefield.ingest.cache import read_cached
 from citefield.providers import Provider, ReadResult
 from citefield.schema import load
-from citefield.verify import verify
+from citefield.verify import trigger, verify
 
 
 class CachedProvider:
@@ -65,20 +65,6 @@ def api_estimate(images: list[tuple[int, int]], prompt_chars: int, output_tokens
 
 def _preds(fields: list[Extracted]) -> list[Pred]:
     return [Pred(f.field, f.value, f.box) for f in fields]
-
-
-TRIGGERS = (  # reason text -> trigger, most specific first
-    ("is also cited as", "collision"),
-    ("second read", "second_read"),
-    ("confidence", "confidence"),
-    ("does not hold", "rule"),
-    ("check digit", "rule"),
-    ("cited", "citation"),
-)
-
-
-def trigger(reason: str) -> str:
-    return next(t for key, t in TRIGGERS if key in reason)
 
 
 def main(argv: list[str] | None = None) -> dict[str, Any]:

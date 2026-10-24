@@ -171,6 +171,102 @@ def test_provider_failure_is_recorded_and_export_refused(tmp_path):
     assert doc["status"] == "failed" and "rate limited" in doc["error"]
     assert c.get(f"/api/documents/{doc_id}/export").status_code == 409
 
+    # once the provider works again, the same upload is read without sending the file again
+    service.provider = FakeProvider
+    assert c.post(f"/api/documents/{doc_id}/retry").status_code == 202
+    assert c.get(f"/api/documents/{doc_id}").json() | {"error": None} == c.get(f"/api/documents/{doc_id}").json()
+    run_queue(service)
+    assert c.get(f"/api/documents/{doc_id}").json()["status"] == "ready"
+    assert c.post(f"/api/documents/{doc_id}/retry").status_code == 409
+
+
+def test_summary_counts_and_stats(tmp_path):
+    c, service = client(tmp_path, FakeProvider(second_total="7.80"))
+    upload(c)
+    run_queue(service)
+    upload(c, data=b"%PDF-1.4 broken", name="broken.pdf")
+    run_queue(service)
+
+    ready = next(d for d in c.get("/api/documents").json() if d["filename"] == "r.pdf")
+    assert ready["counts"] == {"auto": 5, "review": 1, "approved": 0, "corrected": 0}
+    assert ready["page_count"] == 1 and ready["model"] == "fake-1" and ready["created_at"].endswith("+00:00")
+
+    st = c.get("/api/stats", params={"days": 7}).json()
+    assert st["documents"] == {"queued": 0, "processing": 0, "ready": 1, "failed": 1}
+    assert st["fields"]["review"] == 1 and st["auto_share"] == 5 / 6
+    assert st["triggers"] == {"second_read": 1}
+    assert len(st["per_day"]) == 7 and st["per_day"][-1]["documents"] == 2
+    assert st["schemas"] == {"receipt": 2}
+    assert c.get("/api/stats", params={"days": 0}).status_code == 422
+
+
+def test_settings_say_whether_a_key_is_set_but_never_show_it(tmp_path, monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-secret-value")
+
+    class Anthropicish(FakeProvider):
+        name, model = "anthropic", "claude-sonnet-5-5"
+
+    c, _ = client(tmp_path, Anthropicish())
+    r = c.get("/api/settings")
+    assert r.json()["api_key_set"] is True and r.json()["provider"] == "anthropic"
+    assert "sk-ant-secret-value" not in r.text and r.json()["max_upload_mb"] == 25
+
+
+def test_custom_schema_save_use_and_delete(tmp_path):
+    c, service = client(tmp_path, FakeProvider())
+    body = {
+        "description": "coffee receipts",
+        "fields": [
+            {"name": "merchant", "kind": "text"},
+            {"name": "item.name", "kind": "text", "group": "item", "anchor": True},
+            {"name": "item.total", "kind": "amount", "group": "item"},
+            {"name": "total", "kind": "amount"},
+        ],
+        "rules": [{"type": "sum", "of": "item.total", "equals": "total"}],
+    }
+    r = c.put("/api/schemas/coffee", json=body)
+    assert r.status_code == 200 and r.json()["bundled"] is False
+    saved = json.loads((tmp_path / "schemas" / "coffee.json").read_text("utf-8"))
+    assert saved["name"] == "coffee" and saved["rules"] == [{"type": "sum", "equals": "total", "of": "item.total"}]
+    assert "coffee" in [s["name"] for s in c.get("/api/schemas").json()]
+    assert c.get("/api/schemas/coffee").json()["fields"][1] == {
+        "name": "item.name",
+        "kind": "text",
+        "group": "item",
+        "anchor": True,
+    }
+
+    doc_id = upload(c, schema="coffee").json()["id"]
+    run_queue(service)
+    assert c.get(f"/api/documents/{doc_id}").json()["rules"][0]["outcome"] == "holds"
+
+    assert c.put("/api/schemas/invoice", json=body).status_code == 409
+    assert c.put("/api/schemas/bad", json={"fields": []}).status_code == 422
+    bad_rule = body | {"rules": [{"type": "sum", "of": "nope", "equals": "total"}]}
+    assert "unknown fields" in c.put("/api/schemas/bad", json=bad_rule).json()["detail"]
+    assert "schema names" in c.put("/api/schemas/bad.name", json=body).json()["detail"]
+    assert c.put("/api/schemas/..%2Fx", json=body).status_code != 200  # never routed to the save
+    assert c.delete("/api/schemas/receipt").status_code == 409
+    assert c.delete("/api/schemas/coffee").status_code == 204
+    assert c.get("/api/schemas/coffee").status_code == 404
+
+
+def test_export_several_documents(tmp_path):
+    c, service = client(tmp_path, FakeProvider())
+    a = upload(c, name="a.pdf").json()["id"]
+    b = upload(c, name="b.pdf").json()["id"]
+    run_queue(service)
+    r = c.get("/api/export", params={"ids": f"{a},{b},{a}", "format": "csv"})
+    assert r.status_code == 200 and "2-documents" in r.headers["content-disposition"]
+    rows = list(csv.DictReader(io.StringIO(r.content.decode("utf-8-sig"))))
+    assert {row["filename"] for row in rows} == {"a.pdf", "b.pdf"} and len(rows) == 12
+    assert len(json.loads(c.get("/api/export", params={"ids": a, "format": "json"}).content)) == 1
+    assert c.get("/api/export", params={"ids": f"{a},{b}"}).content[:2] == b"PK"  # xlsx by default
+
+    queued = upload(c, name="c.pdf").json()["id"]
+    assert "c.pdf" in c.get("/api/export", params={"ids": f"{a},{queued}"}).json()["detail"]
+    assert c.get("/api/export", params={"ids": "missing"}).status_code == 404
+
 
 def test_recover_requeues_interrupted_work(tmp_path):
     c, service = client(tmp_path, FakeProvider())

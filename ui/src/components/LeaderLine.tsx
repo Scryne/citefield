@@ -46,8 +46,8 @@ export function LeaderLine({ fieldId }: { fieldId: number }) {
   if (!seg) return null
   return (
     <svg aria-hidden className="pointer-events-none fixed inset-0 z-20 size-full">
-      <line {...seg} stroke="var(--color-primary)" strokeWidth={1.5} strokeOpacity={0.8} />
-      <circle cx={seg.x1} cy={seg.y1} r={3} fill="var(--color-primary)" />
+      <line {...seg} stroke="var(--color-ink-primary)" strokeWidth={1.5} strokeOpacity={0.8} />
+      <circle cx={seg.x1} cy={seg.y1} r={3} fill="var(--color-ink-primary)" />
     </svg>
   )
 }

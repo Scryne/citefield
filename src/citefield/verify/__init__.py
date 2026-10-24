@@ -30,6 +30,20 @@ CITATION_REASON = {
     "partial": "the cited words cover only part of this value",
 }
 
+TRIGGERS = (  # reason text -> trigger, most specific first
+    ("is also cited as", "collision"),
+    ("second read", "second_read"),
+    ("confidence", "confidence"),
+    ("does not hold", "rule"),
+    ("check digit", "rule"),
+    ("cited", "citation"),
+)
+
+
+def trigger(reason: str) -> str:
+    """The check that produced a review reason; the eval report and the overview count by it."""
+    return next(t for key, t in TRIGGERS if key in reason)
+
 
 @dataclass
 class Decision:

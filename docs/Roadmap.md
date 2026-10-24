@@ -18,6 +18,7 @@ Durum sütunu session-start hook'u tarafından otomatik okunur — format bozulm
 | 5 | Depolama, API, dışa aktarım | ✅ Tamamlandı | SQLite + Alembic; REST (yükle, durum, alanlar, düzelt/onayla, dışa aktar); JSON/CSV/XLSX; `citefield extract` CLI; API testleri gerçek bir belgeyi uçtan uca geçiriyor |
 | 6 | İnceleme arayüzü | ✅ Tamamlandı | `DESIGN.md` dolu ve lint'ten geçti; yan yana belge/alanlar, kutu vurgusu, gerekçeli kuyruk, düzelt/kutu yeniden seç/onayla, klavye kısayolları; Playwright uçtan uca testi + `gorsel-dogrulama` dört genişlikte temiz |
 | 7 | Paketleme ve ölçüm yayını | ✅ Tamamlandı | `uvx citefield serve` ve `docker compose up` temiz makinede tek komutla açılıyor; README İngilizce, ölçüm tablosu `citefield eval` çıktısından üretiliyor; demo GIF açık veri belgesiyle; `yayin-oncesi` çıkış 0 |
+| 7.5 | Kurumsal arayüz (v2) | ✅ Tamamlandı | Tüm ekranlar: genel bakış, belgeler, inceleme, şemalar (oluştur/düzenle), ayarlar, 404; açık + koyu tema; e2e testleri gerçek uygulamada yeşil; `gorsel-dogrulama` tüm rotalar 0 sorun |
 | 8 | Gerçek kullanım | ⏳ Bekliyor | Repo public + PyPI yayını (Scryne onayıyla); lansman gönderileri; ≥ 3 dış kişinin kendi belgesiyle çalıştırdığına dair kanıt; bulgular roadmap'e işlendi |
 
 ## Faz Detayları
@@ -99,6 +100,16 @@ Faz 1 ve son faz şablonla gelir: biri projenin sessizce çürümesini engeller 
   - `yayin-oncesi`.
 - **Bitti Kriteri:** tabloda.
 - **Notlar:** ✅ 2026-10-24. Ayrılmış dilim (ayar sırasında hiç bakılmamış) Sonnet: CORD 25–49 değer %88,7 / konum %96,3, otomatik onay %77,3, onaylananlarda hata %0,8 (2 gerçek: iki satıra yayılan ürün adı ilk satırda kesilmiş), yanlışların 10/12'si incelemede; FATURA şablon 31–50 %100 / %100, otomatik onaylı 5 'yanlış'ın hepsi basılı ama etiketsiz değer. Faz 4'ün post-hoc ayarları yeni veride tuttu. README tablosu `citefield.eval.table` ile raporlardan üretiliyor. Haiku'nun ayrılmış dilimi bellek baskısıyla durduruldu, yarım (README'de Haiku sayısı 'ayar dilimi' diye etiketli). Docker tek imaj (1,66 GB) konteynerde API+arayüz+OCR doğrulandı; `docker compose config` geçerli; wheel (arayüz dahil) `uvx --isolated` ile `citefield serve` açtı. Demo GIF yerine ekran görüntüsü (sentetik FATURA faturası). `yayin-oncesi` ağaç taraması 0 bulgu. Geçmişte: commit e-postası (kişisel) ve eski test numaraları → public'ten önce geçmiş temizliği Scryne kararı (Faz 8). Commit kimliği artık noreply.
+
+### Faz 7.5: Kurumsal arayüz (v2)
+- **İstek (2026-10-24, Scryne):** "projenin tamamlanmış şekilde kurumsal ve profesyonel bir frontendini yap… tüm ekranları… örnek frontendler bulabilirsin proje özelinde."
+- **İşler:**
+  - Örnek IDP arayüzleri araştırması (Rossum, Mindee, Docsumo, Extend, Sensible, Unstract, Reducto, A2I).
+  - DESIGN.md baştan: açık tema ana kimlik, koyu tema ikinci tema.
+  - Backend uçları: `/api/stats`, `/api/settings` (anahtar asla, yalnız "var mı"), şema oku/kaydet/sil, `retry`, çoklu dışa aktarım; özetlere durum sayıları.
+  - Ekranlar: uygulama kabuğu (lacivert kenar çubuğu, mobil çekmece), genel bakış, belgeler, inceleme, şema listesi/detay/düzenleyici, ayarlar, 404.
+- **Bitti Kriteri:** tabloda.
+- **Notlar:** ✅ 2026-10-24. Araştırmadan alınanlar adıyla: engel özeti şeridi (Rossum "automation blockers"), satır kalemi ızgarası (Docsumo/Rossum), bulunamayan şema alanlarını boş göstermek (AWS A2I), editör/JSON geçişi (Sensible), başarısız belgeyi yeniden okuma (Mindee "Rerun"). Görsel stil belgelerden doğrulanamadı; palet `ui-ux-pro-max` (kurumsal güven: lacivert + tek mavi vurgu, "AI mor gradyan"dan kaçın). Eski koyu çivit/glow kimliği bu yüzden bırakıldı; global glassmorphism varsayılanından DESIGN.md ile çıkıldı. Durum üçlüsü dataviz doğrulayıcısından geçti: ilk camgöbeği 'düzeltildi' yeşilden 10,8 ΔE uzaktaydı (normal görüşte bile ayırt edilmez), mora alındı. Sayfa kutuları iki temada da açık ton (kağıt beyaz). Testlerin yakaladığı gerçek hatalar: yükleme penceresinde dosya seçiciyle seçilen dosyalar hiç eklenmiyordu (canlı FileList, input sıfırlanınca boşalıyordu); 390 px'te `sr-only` başlık metni kaydırma kutusundan kaçıp sayfayı 339 px taşırıyordu; tablo `max-w-0` hilesiyle dosya adı sütunu sıfıra çöküyordu (telefonda artık liste). Base UI sekmelerinde seçili öznitelik `data-active` (`data-selected` değil). 88 Python testi (yeni uçlar 5 test), 6 Playwright testi. Ekran görüntüleri açık veriden (CORD/FATURA), değerlendirme önbelleğindeki okumalarla: canlı model çağrısı yok.
 
 ### Faz 8: Gerçek kullanım
 - **İşler:**

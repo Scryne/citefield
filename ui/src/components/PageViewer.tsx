@@ -2,11 +2,12 @@ import { useEffect, useRef } from 'react'
 import type { Field, PageInfo, Word } from '../api'
 import { cn } from '../lib'
 
+// ink tokens: the page is white in both themes (DESIGN.md)
 const STATUS_STROKE: Record<Field['status'], string> = {
-  review: 'var(--color-review)',
-  auto: 'var(--color-approved)',
-  approved: 'var(--color-approved)',
-  corrected: 'var(--color-corrected)',
+  review: 'var(--color-ink-review)',
+  auto: 'var(--color-ink-approved)',
+  approved: 'var(--color-ink-approved)',
+  corrected: 'var(--color-ink-corrected)',
 }
 
 interface Props {
@@ -39,12 +40,12 @@ export function PageViewer({ src, page, fields, activeId, onSelect, zoom, recite
   }, [active?.id, active?.box, page.width, zoom])
 
   return (
-    <div ref={scroller} className="relative min-h-0 flex-1 overflow-auto rounded-lg bg-surface p-3" data-page-scroller>
+    <div ref={scroller} className="relative min-h-0 flex-1 overflow-auto rounded-lg bg-surface-raised p-4" data-page-scroller>
       <div className="relative mx-auto" style={{ width: `${zoom * 100}%`, aspectRatio: `${page.width} / ${page.height}` }}>
         <img
           src={src}
           alt={`Page ${page.index + 1}`}
-          className="absolute inset-0 size-full rounded-sm bg-paper object-contain shadow-lg"
+          className="absolute inset-0 size-full rounded-sm bg-paper object-contain shadow-sm ring-1 ring-black/5"
           draggable={false}
         />
         <svg
@@ -64,10 +65,10 @@ export function PageViewer({ src, page, fields, activeId, onSelect, zoom, recite
                 height={w.box[3] - w.box[1] + 4}
                 rx={3}
                 onClick={() => recite.toggle(w.id)}
-                className={cn(
-                  'cursor-pointer',
-                  on ? 'fill-primary-fill stroke-primary opacity-100' : 'fill-transparent stroke-primary/50 opacity-60 hover:opacity-100',
-                )}
+                className={cn('cursor-pointer', on ? 'opacity-100' : 'opacity-60 hover:opacity-100')}
+                fill={on ? 'rgb(37 99 235 / 0.16)' : 'transparent'}
+                stroke="var(--color-ink-primary)"
+                strokeOpacity={on ? 1 : 0.5}
                 strokeWidth={on ? 3 : 1.5}
                 vectorEffect="non-scaling-stroke"
               >
@@ -91,9 +92,9 @@ export function PageViewer({ src, page, fields, activeId, onSelect, zoom, recite
                   rx={4}
                   onClick={() => onSelect(f.id)}
                   className="cursor-pointer"
-                  fill={isActive ? 'var(--color-primary-fill)' : 'transparent'}
-                  stroke={isActive ? 'var(--color-primary)' : STATUS_STROKE[f.status]}
-                  strokeOpacity={isActive ? 1 : 0.55}
+                  fill={isActive ? 'rgb(37 99 235 / 0.14)' : 'transparent'}
+                  stroke={isActive ? 'var(--color-ink-primary)' : STATUS_STROKE[f.status]}
+                  strokeOpacity={isActive ? 1 : 0.6}
                   strokeWidth={isActive ? 3 : 1.5}
                   vectorEffect="non-scaling-stroke"
                 >

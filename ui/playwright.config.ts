@@ -5,6 +5,8 @@ const PORT = 8497
 // The built UI (npm run build) is served by the real Python app with a fake model (tests/e2e_server.py).
 export default defineConfig({
   testDir: 'e2e',
+  // one app, one seeded receipt: the files share it and run in order (app.spec before review.spec)
+  workers: 1,
   timeout: 30_000,
   use: {
     baseURL: `http://127.0.0.1:${PORT}`,

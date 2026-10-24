@@ -27,6 +27,7 @@ log = logging.getLogger("citefield")
 
 MAX_UPLOAD = 25 * 1024 * 1024
 ACCEPTED = (b"%PDF-", b"\x89PNG", b"\xff\xd8\xff", b"II*\x00", b"MM\x00*", b"RIFF")  # PDF, PNG, JPEG, TIFF, WebP
+ACCEPTED_TYPES = ("PDF", "PNG", "JPEG", "TIFF", "WebP")
 
 
 def accepted(data: bytes) -> bool:
@@ -40,9 +41,13 @@ class Service:
         self.provider = provider
         (data_dir / "uploads").mkdir(parents=True, exist_ok=True)
 
-    def schema(self, name: str) -> Schema:
+    @staticmethod
+    def schema_name_ok(name: str) -> None:
         if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", name):
             raise ValueError("schema names are letters, digits, _ and -")
+
+    def schema(self, name: str) -> Schema:
+        self.schema_name_ok(name)
         custom = self.dir / "schemas" / f"{name}.json"
         return load(str(custom) if custom.exists() else name)
 

@@ -6,7 +6,7 @@ Drop in invoices and receipts (PDF or photos). Citefield reads them with a visio
 the exact words on the page, checks the arithmetic, and sends anything uncertain to a review queue with the reason
 written out. What passes every check is approved automatically; what does not waits for a person.
 
-![Review screen: an invoice on the left with the cited words boxed, the review queue with reasons on the right](docs/img/review.png)
+![Review screen: a receipt on the left with each value's words boxed, the values that need review on the right with the reason each check gave](docs/img/review.png)
 
 ## Why
 
@@ -84,9 +84,26 @@ Python 3.11 or newer. OCR runs on the CPU (RapidOCR); no GPU is needed unless yo
 
 ## Using it
 
-**Review UI.** The queue opens on the first field that needs a person. `j`/`k` move, `a` approves, `e` edits the
-value, `c` re-cites it by clicking the right words on the page, `Enter` saves. Corrections keep the value as it was
-read next to the new one. Export to Excel, CSV or JSON; every row keeps its page and box.
+**Review.** A document opens on the first value that needs a person, with a summary of which checks flagged what.
+`j`/`k` move, `a` approves, `e` edits the value, `c` re-cites it by clicking the right words on the page, `Enter`
+saves, `[`/`]` go to the previous or next document that needs review, `?` lists the shortcuts. Corrections keep the
+value as it was read next to the new one. Line items have their own grid; schema fields neither read found are listed
+as not found instead of silently missing.
+
+**Overview and documents.** The overview shows what waits for you, how many values passed every check, and which
+checks send values to review. The documents list filters by status and schema, and exports several documents into one
+Excel, CSV or JSON file; every row keeps its page and box. A document that failed to read (a rejected key, a quota) can
+be read again once the provider works.
+
+**Schemas.** Bundled schemas are read-only and can be duplicated; your own are created and edited in the app (fields,
+line-item groups, arithmetic rules, check digits, or the raw JSON) and saved as files in the data directory.
+
+**Settings.** The provider, model and paths this instance runs with (set by environment variables), whether the API
+key is set (never the key), and a light or dark theme.
+
+| Overview | Documents |
+|---|---|
+| ![Overview: values waiting for review, the share that passed every check, documents per day](docs/img/overview.png) | ![Documents: filters by status, values to review per document](docs/img/documents.png) |
 
 **API.** OpenAPI docs at `/docs`.
 

@@ -1,21 +1,25 @@
-import { Check, Crosshair, Pencil } from 'lucide-react'
+import { Check, CircleAlert, Crosshair, MapPinOff, Pencil } from 'lucide-react'
 import { useState } from 'react'
 import type { Field } from '../api'
+import { fieldLabel } from '../format'
 import { cn } from '../lib'
 import { FieldBadge } from './StatusBadge'
 
-interface RowProps {
-  field: Field
-  active: boolean
-  editing: boolean
-  reciting: boolean
+export interface RowActions {
   busy: boolean
-  onSelect: () => void
   onApprove: () => void
   onEdit: () => void
   onRecite: () => void
   onSave: (value: string) => void
   onCancel: () => void
+}
+
+interface RowProps extends RowActions {
+  field: Field
+  active: boolean
+  editing: boolean
+  reciting: boolean
+  onSelect: () => void
 }
 
 function FieldRow(p: RowProps) {
@@ -27,22 +31,38 @@ function FieldRow(p: RowProps) {
       aria-current={p.active || undefined}
       onClick={p.active ? undefined : p.onSelect}
       className={cn(
-        'group flex cursor-pointer flex-col gap-1.5 rounded-md border-l-2 bg-surface p-3',
-        p.active ? 'border-primary bg-surface-raised' : 'border-transparent hover:bg-surface-raised/70',
+        'flex cursor-pointer flex-col gap-1.5 rounded-md border px-3 py-2.5 transition-colors duration-150',
+        p.active
+          ? 'border-primary bg-primary-tint'
+          : 'border-transparent hover:border-border hover:bg-surface-raised/60',
       )}
     >
       <div className="flex items-center gap-2">
-        <span className="min-w-0 flex-1 truncate text-xs font-medium text-muted">
-          {f.name}
-          {f.item !== null && <span className="tabular-nums"> · item {f.item}</span>}
-          {f.page === null && <span className="text-review"> · no box</span>}
+        <span className="flex min-w-0 flex-1 items-baseline gap-2">
+          {/* the keyboard way to select a row (besides j/k); the row itself is a larger mouse target */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              p.onSelect()
+            }}
+            aria-pressed={p.active}
+            className="cursor-pointer truncate text-left text-[13px] font-medium"
+          >
+            {fieldLabel(f.name.split('.').pop() ?? f.name)}
+          </button>
+          <span className="truncate font-mono text-xs text-muted">
+            {/* a flat key ("NUMBER", "due_date") is the label again; a dotted one says where the field belongs */}
+            {f.name.includes('.') ? f.name : null}
+            {f.item !== null && <span className="tabular-nums"> #{f.item}</span>}
+          </span>
         </span>
         <FieldBadge status={f.status} />
       </div>
 
       {p.editing ? (
         <form
-          className="flex gap-2"
+          className="flex flex-wrap gap-2"
           // Enter submits through a synthetic click on Save; it must not reach the row and reset the selection
           onClick={(e) => e.stopPropagation()}
           onSubmit={(e) => {
@@ -59,12 +79,20 @@ function FieldRow(p: RowProps) {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => e.key === 'Escape' && p.onCancel()}
-            className="h-8 min-w-0 flex-1 rounded-sm border border-border bg-background px-2 font-mono tabular-nums"
+            className="h-8 min-w-0 flex-1 basis-40 rounded-md border border-border-strong bg-surface px-2 font-mono tabular-nums"
           />
-          <button type="submit" disabled={p.busy} className="h-8 cursor-pointer rounded-sm bg-primary px-2 text-background">
+          <button
+            type="submit"
+            disabled={p.busy}
+            className="h-8 cursor-pointer rounded-md bg-primary px-3 text-[13px] font-medium text-on-primary hover:bg-primary-hover"
+          >
             Save
           </button>
-          <button type="button" onClick={p.onCancel} className="h-8 cursor-pointer rounded-sm bg-surface-raised px-2">
+          <button
+            type="button"
+            onClick={p.onCancel}
+            className="h-8 cursor-pointer rounded-md border border-border-strong bg-surface px-3 text-[13px] hover:bg-surface-raised"
+          >
             Cancel
           </button>
         </form>
@@ -72,17 +100,28 @@ function FieldRow(p: RowProps) {
         <p className="font-mono text-[15px] font-medium tabular-nums break-words">
           {f.value}
           {f.status === 'corrected' && f.extracted_value !== f.value && (
-            <span className="ml-2 font-sans text-xs font-normal text-muted line-through">{f.extracted_value}</span>
+            <span className="ml-2 font-sans text-xs font-normal text-muted">
+              read as <span className="line-through">{f.extracted_value}</span>
+            </span>
           )}
         </p>
       )}
 
-      {f.status === 'review' && f.reasons.length > 0 && (
-        <ul className="flex flex-col gap-0.5 text-xs text-pretty text-muted">
+      {f.reasons.length > 0 && (f.status === 'review' || p.active) && (
+        <ul className="flex flex-col gap-1 text-xs">
           {f.reasons.map((r) => (
-            <li key={r}>{r}</li>
+            <li key={r} className={cn('flex gap-1.5 text-pretty', f.status === 'review' ? 'text-review-fg' : 'text-muted')}>
+              <CircleAlert aria-hidden className="mt-px size-3.5 shrink-0" />
+              <span>{r}</span>
+            </li>
           ))}
         </ul>
+      )}
+
+      {f.page === null && (
+        <p className="flex items-center gap-1.5 text-xs text-muted">
+          <MapPinOff aria-hidden className="size-3.5" /> No box on the page. Fix it with the words it was read from.
+        </p>
       )}
 
       {p.reciting && (
@@ -96,28 +135,38 @@ function FieldRow(p: RowProps) {
               type="button"
               onClick={p.onApprove}
               disabled={p.busy}
-              className="inline-flex h-7 cursor-pointer items-center gap-1 rounded-sm bg-approved px-2 text-xs font-medium text-background"
+              aria-keyshortcuts="a"
+              className="inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-md bg-primary px-2.5 text-xs font-medium text-on-primary hover:bg-primary-hover disabled:opacity-60"
             >
-              <Check aria-hidden className="size-3.5" /> Approve <kbd className="opacity-70">a</kbd>
+              <Check aria-hidden className="size-3.5" /> Approve{' '}
+              <kbd aria-hidden className="border-transparent bg-white/20 text-current">
+                a
+              </kbd>
             </button>
           )}
           <button
             type="button"
             onClick={p.onEdit}
-            className="inline-flex h-7 cursor-pointer items-center gap-1 rounded-sm bg-surface px-2 text-xs ring-1 ring-border"
+            aria-keyshortcuts="e"
+            className="inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-md border border-border-strong bg-surface px-2.5 text-xs hover:bg-surface-raised"
           >
-            <Pencil aria-hidden className="size-3.5" /> Edit value <kbd className="text-muted">e</kbd>
+            <Pencil aria-hidden className="size-3.5" /> Edit value <kbd aria-hidden>e</kbd>
           </button>
           <button
             type="button"
             onClick={p.onRecite}
+            aria-keyshortcuts="c"
             className={cn(
-              'inline-flex h-7 cursor-pointer items-center gap-1 rounded-sm px-2 text-xs ring-1',
-              p.reciting ? 'bg-primary text-background ring-primary' : 'bg-surface ring-border',
+              'inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-md border px-2.5 text-xs',
+              p.reciting
+                ? 'border-primary bg-primary text-on-primary'
+                : 'border-border-strong bg-surface hover:bg-surface-raised',
             )}
           >
             <Crosshair aria-hidden className="size-3.5" /> {p.reciting ? 'Picking words' : 'Fix box'}{' '}
-            <kbd className={p.reciting ? 'opacity-70' : 'text-muted'}>c</kbd>
+            <kbd aria-hidden className={p.reciting ? 'border-transparent bg-white/20 text-current' : ''}>
+              c
+            </kbd>
           </button>
         </div>
       )}
@@ -125,17 +174,34 @@ function FieldRow(p: RowProps) {
   )
 }
 
-interface PanelProps extends Omit<RowProps, 'field' | 'active' | 'editing' | 'reciting' | 'onSelect'> {
+interface PanelProps extends RowActions {
   fields: Field[]
   activeId: number | null
   editingId: number | null
   recitingId: number | null
   onSelect: (id: number) => void
+  missing: string[]
 }
 
-export function FieldPanel({ fields, activeId, editingId, recitingId, onSelect, ...actions }: PanelProps) {
+function Section({ id, title, count, tone, children }: { id: string; title: string; count: number; tone?: 'review'; children: React.ReactNode }) {
+  return (
+    <section aria-labelledby={id} className="flex flex-col gap-1">
+      <h2 id={id} className="flex items-center gap-2 px-1 pb-1 text-xs font-medium text-muted">
+        {title}
+        <span className={cn('tabular-nums', tone === 'review' && count ? 'text-review-fg' : '')}>{count}</span>
+      </h2>
+      {children}
+    </section>
+  )
+}
+
+export function FieldPanel({ fields, activeId, editingId, recitingId, onSelect, missing, ...actions }: PanelProps) {
   const review = fields.filter((f) => f.status === 'review')
-  const rest = fields.filter((f) => f.status !== 'review')
+  const header = fields.filter((f) => f.status !== 'review' && f.item === null)
+  const items = fields.filter((f) => f.status !== 'review' && f.item !== null)
+  const byItem = new Map<number, Field[]>()
+  for (const f of items) byItem.set(f.item!, [...(byItem.get(f.item!) ?? []), f])
+
   const row = (f: Field) => (
     <FieldRow
       key={f.id}
@@ -149,24 +215,42 @@ export function FieldPanel({ fields, activeId, editingId, recitingId, onSelect, 
   )
   return (
     <div className="flex flex-col gap-5">
-      <section aria-labelledby="review-h" className="flex flex-col gap-1.5">
-        <h2 id="review-h" className="flex items-center gap-2 text-xs font-medium text-muted">
-          Needs review <span className="tabular-nums text-review">{review.length}</span>
-        </h2>
-        {review.length ? (
-          <ul className="flex flex-col gap-1.5">{review.map(row)}</ul>
-        ) : (
-          <p className="rounded-md bg-surface p-3 text-pretty text-muted">
-            Nothing waits for you here. Spot-check the boxes below, then export.
+      {review.length > 0 && (
+        <Section id="review-h" title="Needs review" count={review.length} tone="review">
+          <ul className="flex flex-col gap-1">{review.map(row)}</ul>
+        </Section>
+      )}
+      {header.length > 0 && (
+        <Section id="header-h" title="Document" count={header.length}>
+          <ul className="flex flex-col gap-1">{header.map(row)}</ul>
+        </Section>
+      )}
+      {byItem.size > 0 && (
+        <Section id="items-h" title="Line items" count={byItem.size}>
+          {[...byItem.entries()]
+            .sort(([a], [b]) => a - b)
+            .map(([n, fs]) => (
+              <div key={n} className="flex flex-col gap-1 pb-1">
+                <p className="px-1 text-xs text-muted tabular-nums">Item {n}</p>
+                <ul className="flex flex-col gap-1">{fs.map(row)}</ul>
+              </div>
+            ))}
+        </Section>
+      )}
+      {missing.length > 0 && (
+        <Section id="missing-h" title="Not found on the document" count={missing.length}>
+          <ul className="flex flex-wrap gap-1.5 px-1">
+            {missing.map((m) => (
+              <li key={m} className="rounded-sm border border-dashed border-border-strong px-1.5 py-0.5 font-mono text-xs text-muted">
+                {m}
+              </li>
+            ))}
+          </ul>
+          <p className="px-1 pt-1 text-xs text-pretty text-muted">
+            The schema asks for these, and neither read found them. Many are optional (a receipt rarely prints a due date).
           </p>
-        )}
-      </section>
-      <section aria-labelledby="checked-h" className="flex flex-col gap-1.5">
-        <h2 id="checked-h" className="flex items-center gap-2 text-xs font-medium text-muted">
-          Checked <span className="tabular-nums">{rest.length}</span>
-        </h2>
-        <ul className="flex flex-col gap-1.5">{rest.map(row)}</ul>
-      </section>
+        </Section>
+      )}
     </div>
   )
 }

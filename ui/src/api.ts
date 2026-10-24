@@ -26,7 +26,11 @@ export interface DocumentSummary {
   error: string | null
   to_review: number
   fields: number
+  counts: Record<FieldStatus, number>
+  page_count: number
+  model: string | null
   created_at: string
+  updated_at: string
 }
 
 export interface PageInfo {
@@ -37,7 +41,6 @@ export interface PageInfo {
 }
 
 export interface DocumentDetail extends DocumentSummary {
-  model: string | null
   pages: PageInfo[]
   rules: { rule: string; outcome: 'holds' | 'fails' | 'skipped'; detail: string }[]
   possibly_missed: { field: string; value: string; item: number | null }[]
@@ -52,11 +55,65 @@ export interface Word {
   line: number
 }
 
+export type FieldKind = 'text' | 'amount' | 'count' | 'date' | 'id'
+export type CheckDigit = 'iban' | 'tckn' | 'vkn' | 'luhn'
+
+export interface FieldSpec {
+  name: string
+  kind: FieldKind
+  description?: string
+  group?: string
+  anchor?: boolean
+  check?: CheckDigit
+}
+
+export interface Rule {
+  type: 'sum' | 'add' | 'product'
+  equals: string
+  of?: string
+  fallback?: string
+  terms?: string[]
+  minus?: string[]
+  factors?: string[]
+}
+
 export interface SchemaInfo {
   name: string
   description: string
-  fields: string[]
+  bundled: boolean
+  fields: FieldSpec[]
+  rules: Rule[]
 }
+
+export type Trigger = 'second_read' | 'confidence' | 'rule' | 'citation' | 'collision'
+
+export interface Stats {
+  documents: Record<DocumentSummary['status'], number>
+  fields: Record<FieldStatus, number>
+  auto_share: number | null
+  triggers: Partial<Record<Trigger, number>>
+  per_day: { date: string; documents: number }[]
+  seconds_per_document: number | null
+  schemas: Record<string, number>
+}
+
+export interface Settings {
+  version: string
+  provider: string
+  model: string | null
+  base_url: string | null
+  api_key_env: string | null
+  api_key_set: boolean
+  data_dir: string
+  schemas_dir: string
+  max_upload_mb: number
+  accepted_types: string[]
+  worker: boolean
+  kinds: FieldKind[]
+  checks: CheckDigit[]
+}
+
+export type ExportFormat = 'json' | 'csv' | 'xlsx'
 
 export class ApiError extends Error {}
 
@@ -80,6 +137,18 @@ export const api = {
   document: (id: string) => request<DocumentDetail>(`/api/documents/${id}`),
   words: (id: string, page: number) => request<Word[]>(`/api/documents/${id}/words?page=${page + 1}`),
   schemas: () => request<SchemaInfo[]>('/api/schemas'),
+  schema: (name: string) => request<SchemaInfo>(`/api/schemas/${encodeURIComponent(name)}`),
+  saveSchema: (name: string, body: Omit<SchemaInfo, 'name' | 'bundled'>) =>
+    request<SchemaInfo>(`/api/schemas/${encodeURIComponent(name)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+  removeSchema: (name: string) => request<void>(`/api/schemas/${encodeURIComponent(name)}`, { method: 'DELETE' }),
+  stats: (days = 14) => request<Stats>(`/api/stats?days=${days}`),
+  settings: () => request<Settings>('/api/settings'),
+  health: () => request<{ status: string; version: string; queued: number }>('/api/health'),
+  retry: (id: string) => request<{ id: string }>(`/api/documents/${id}/retry`, { method: 'POST' }),
   upload: (file: File, schema: string) => {
     const body = new FormData()
     body.append('file', file)
@@ -94,5 +163,6 @@ export const api = {
     }),
   remove: (id: string) => request<void>(`/api/documents/${id}`, { method: 'DELETE' }),
   pageUrl: (id: string, page: number) => `/api/documents/${id}/pages/${page + 1}.png`,
-  exportUrl: (id: string, format: 'json' | 'csv' | 'xlsx') => `/api/documents/${id}/export?format=${format}`,
+  exportUrl: (id: string, format: ExportFormat) => `/api/documents/${id}/export?format=${format}`,
+  exportManyUrl: (ids: string[], format: ExportFormat) => `/api/export?ids=${ids.join(',')}&format=${format}`,
 }

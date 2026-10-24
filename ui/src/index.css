@@ -10,56 +10,107 @@
 @import "@fontsource/ibm-plex-mono/latin-500.css";
 @import "@fontsource/ibm-plex-mono/latin-ext-500.css";
 
-/* Tokens: DESIGN.md frontmatter, exported with `designmd export --format css-tailwind`. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Tokens: DESIGN.md frontmatter. Light is the default; the dark theme redefines the same names below. */
 @theme {
-  --color-background: #0b0d17;
-  --color-background-glow-1: #2a1b4d;
-  --color-background-glow-2: #0f2a4a;
-  --color-surface: #141726;
-  --color-surface-raised: #1c2033;
-  --color-border: #2c3150;
-  --color-foreground: #eef0f8;
-  --color-muted: #9aa0bc;
+  --color-background: #f5f7fa;
+  --color-surface: #ffffff;
+  --color-surface-raised: #eef1f5;
+  --color-border: #e1e5eb;
+  --color-border-strong: #c9d0da;
+  --color-foreground: #0f172a;
+  --color-muted: #566173;
   --color-paper: #ffffff;
-  --color-primary: #6e7bff;
-  --color-primary-fill: #6e7bff33;
-  --color-review: #ffb224;
-  --color-approved: #3dd68c;
-  --color-corrected: #4cc3ff;
-  --color-danger: #ff5a5f;
+  --color-sidebar: #0f172a;
+  --color-sidebar-raised: #1e293b;
+  --color-sidebar-foreground: #e2e8f0;
+  --color-sidebar-muted: #94a3b8;
+  --color-sidebar-accent: #93b4f5;
+  --color-sidebar-review: #fcd34d;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-on-primary: #ffffff;
+  --color-primary-fill: #2563eb1f;
+  --color-primary-tint: #e9f0fd;
+  --color-review: #d97706;
+  --color-review-fg: #92400e;
+  --color-review-fill: #fef3c7;
+  --color-approved: #16a34a;
+  --color-approved-fg: #166534;
+  --color-approved-fill: #dcfce7;
+  --color-corrected: #7c3aed;
+  --color-corrected-fg: #5b21b6;
+  --color-corrected-fill: #ede9fe;
+  --color-danger: #dc2626;
+  --color-danger-fg: #991b1b;
+  --color-danger-fill: #fee2e2;
+  /* the page image is white in both themes, so its boxes keep the light tones */
+  --color-ink-primary: #2563eb;
+  --color-ink-review: #d97706;
+  --color-ink-approved: #16a34a;
+  --color-ink-corrected: #7c3aed;
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
 }
 
-/* z-index scale: base 0, sticky 10, overlay 20, popover 30, dialog 40 */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-background: #0b1120;
+  --color-surface: #111827;
+  --color-surface-raised: #1a2333;
+  --color-border: #263142;
+  --color-border-strong: #364357;
+  --color-foreground: #e5e9f0;
+  --color-muted: #9aa5b8;
+  --color-sidebar: #070b14;
+  --color-sidebar-raised: #151d2c;
+  --color-primary: #5b8def;
+  --color-primary-hover: #7ba3f3;
+  --color-on-primary: #0b1120;
+  --color-primary-fill: #5b8def33;
+  --color-primary-tint: #17233b;
+  --color-review: #c47c08;
+  --color-review-fg: #fcd34d;
+  --color-review-fill: #f59e0b26;
+  --color-approved: #1aae52;
+  --color-approved-fg: #86efac;
+  --color-approved-fill: #22c55e22;
+  --color-corrected: #9370f5;
+  --color-corrected-fg: #c4b5fd;
+  --color-corrected-fill: #9370f526;
+  --color-danger: #ef4444;
+  --color-danger-fg: #fca5a5;
+  --color-danger-fill: #ef444426;
+}
+
+/* z-index scale: base 0, sticky 10, overlay 20, drawer 30, popover 40, dialog 50 */
 
 @layer base {
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    /* the global gradient mesh, toned down so it never competes with the page */
-    background-image:
-      radial-gradient(60rem 40rem at 0% 0%, var(--color-background-glow-1), transparent 60%),
-      radial-gradient(50rem 40rem at 100% 100%, var(--color-background-glow-2), transparent 60%);
-    background-attachment: fixed;
     font-size: 14px;
   }
   :focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
+  kbd {
+    @apply rounded-sm border border-border bg-surface-raised px-1 font-mono text-[11px] leading-4 text-muted;
+  }
 }
 
-@utility glass {
-  background-color: rgb(20 23 38 / 0.72);
-  border-color: rgb(255 255 255 / 0.1);
+/* The sticky bars over scrolling content: one blurred layer at a time (DESIGN.md, global base). */
+@utility bar {
+  background-color: color-mix(in srgb, var(--color-surface) 92%, transparent);
   @supports (backdrop-filter: blur(12px)) {
-    background-color: rgb(20 23 38 / 0.5);
+    background-color: color-mix(in srgb, var(--color-surface) 80%, transparent);
     backdrop-filter: blur(12px);
   }
 }

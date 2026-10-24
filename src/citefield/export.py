@@ -33,8 +33,8 @@ def _rows(doc: DocumentRow) -> list[dict[str, Any]]:
     return out
 
 
-def to_json(doc: DocumentRow) -> bytes:
-    body = {
+def _json(doc: DocumentRow) -> dict[str, Any]:
+    return {
         "id": doc.id,
         "filename": doc.filename,
         "schema": doc.schema_name,
@@ -57,7 +57,10 @@ def to_json(doc: DocumentRow) -> bytes:
         "rules": doc.rules,
         "possibly_missed": doc.possibly_missed,
     }
-    return json.dumps(body, ensure_ascii=False, indent=2).encode("utf-8")
+
+
+def to_json(doc: DocumentRow) -> bytes:
+    return json.dumps(_json(doc), ensure_ascii=False, indent=2).encode("utf-8")
 
 
 def _safe(v: Any) -> Any:
@@ -105,8 +108,48 @@ def to_xlsx(doc: DocumentRow) -> bytes:
     return buf.getvalue()
 
 
+# Several documents in one file: the same rows, each led by the document it came from.
+MANY_COLUMNS = ("document", "filename", *COLUMNS)
+
+
+def _many_rows(docs: list[DocumentRow]) -> list[dict[str, Any]]:
+    return [{"document": d.id, "filename": d.filename} | r for d in docs for r in _rows(d)]
+
+
+def many_json(docs: list[DocumentRow]) -> bytes:
+    return json.dumps([_json(d) for d in docs], ensure_ascii=False, indent=2).encode("utf-8")
+
+
+def many_csv(docs: list[DocumentRow]) -> bytes:
+    buf = io.StringIO()
+    w = csv.DictWriter(buf, fieldnames=MANY_COLUMNS, lineterminator="\n")
+    w.writeheader()
+    for r in _many_rows(docs):
+        w.writerow({k: _safe(v) for k, v in r.items()})
+    return ("﻿" + buf.getvalue()).encode("utf-8")
+
+
+def many_xlsx(docs: list[DocumentRow]) -> bytes:
+    import xlsxwriter
+
+    buf = io.BytesIO()
+    book = xlsxwriter.Workbook(buf, {"in_memory": True, "strings_to_formulas": False, "strings_to_urls": False})
+    sheet = book.add_worksheet("fields")
+    sheet.write_row(0, 0, MANY_COLUMNS)
+    for i, r in enumerate(_many_rows(docs), 1):
+        sheet.write_row(i, 0, [r[c] for c in MANY_COLUMNS])
+    book.close()
+    return buf.getvalue()
+
+
 FORMATS = {
     "json": (to_json, "application/json"),
     "csv": (to_csv, "text/csv; charset=utf-8"),
     "xlsx": (to_xlsx, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+}
+
+MANY_FORMATS = {
+    "json": (many_json, FORMATS["json"][1]),
+    "csv": (many_csv, FORMATS["csv"][1]),
+    "xlsx": (many_xlsx, FORMATS["xlsx"][1]),
 }
