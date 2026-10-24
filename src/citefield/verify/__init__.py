@@ -7,7 +7,7 @@ field goes to review if any trigger fires, and the reviewer sees which ones did.
 2. The model's own confidence is below the threshold.
 3. An arithmetic rule the field takes part in does not hold, or its check digit fails.
 4. The citation is missing, does not contain the value, or covers only part of it.
-5. The same printed words are cited for two different fields (S2b: role confusion, e.g. card payment as cash).
+5. The same printed value is cited for two different fields (S2b: role confusion, e.g. card payment as cash).
 """
 
 from __future__ import annotations
@@ -195,16 +195,17 @@ def verify(ex: Extraction, schema: Schema, *, min_confidence: float = MIN_CONFID
         if spec and spec.check and not CHECKS[spec.check](f.value):
             d.flag(f"{spec.check.upper()} check digit fails")
 
-    cited_by: dict[int, set[int]] = defaultdict(set)
+    # Only the same value in two roles counts: a currency symbol cited from "$33.10" next to that price is not one.
+    cited_by: dict[tuple[int, str], set[int]] = defaultdict(set)
     for i, f in enumerate(fields):
         for w in f.evidence:
-            cited_by[w].add(i)
+            cited_by[w, normalize(f.value)].add(i)
     for owners in cited_by.values():
         names = {fields[i].field for i in owners}
         if len(names) > 1:
             for i in owners:
                 others = ", ".join(sorted(names - {fields[i].field}))
-                decisions[i].flag(f"the same printed words are also cited as {others}")
+                decisions[i].flag(f"the same printed value is also cited as {others}")
 
     rules = _check_rules(fields, schema, decisions)
     return Verdict(decisions, rules, missed)

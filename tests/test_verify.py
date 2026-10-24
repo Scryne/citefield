@@ -138,3 +138,14 @@ def test_tax_inclusive_line_prices_may_add_up_to_the_total():
     ]
     v = verify(Extraction(fields, second_of(fields)), RECEIPT)
     assert all(d.status == "auto" for d in v.decisions), [d.reasons for d in v.decisions]
+
+
+def test_a_symbol_cited_from_inside_a_price_is_not_a_collision():
+    schema = load("invoice")
+    fields = [
+        E("currency", "$", evidence=[7]),
+        E("line.description", "Tea", 1),
+        E("line.unit_price", "$33.10", 1, evidence=[7]),
+    ]
+    v = verify(Extraction(fields, second_of(fields)), schema)
+    assert all(d.status == "auto" for d in v.decisions), [d.reasons for d in v.decisions]

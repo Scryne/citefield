@@ -4,7 +4,7 @@ Read 1 (K-Yol, S1): page images + OCR words with ids; the model cites the ids it
 Read 2 (K-İkinci okuma, S3): the same provider on the images alone. It is only compared with read 1 later (verify);
 S3 found that a different input path caught real misreads (4/5) far better than a different model (2/5).
 
-Boxes come only from cited words (K-Kanıt), checked by `_evidence`.
+Boxes come only from cited words (K-Kanıt), checked by `cite_check`.
 
 K-Satır (S3 hypothesis: line item fields must be cited inside their item's rows) was built and measured on 25 CORD
 receipts and removed: it lowered location from 96.8% to 92.0% (Sonnet) and caught no wrong value. Quantities are printed
@@ -159,7 +159,7 @@ def type_gate(kind: str, value: str) -> bool:
     return kind not in ("amount", "count") or any(ch.isdigit() for ch in value)
 
 
-def _evidence(value: str, cited: list[int], words: dict[int, Word]) -> tuple[list[int], Citation]:
+def cite_check(value: str, cited: list[int], words: dict[int, Word]) -> tuple[list[int], Citation]:
     """Citation check (S1): only cited words that occur inside the value go into the box, so a caption cited along
     with its value ("TOTAL 45,500") does not widen the box. When no cited word occurs in the value (OCR misread), the
     cited words are kept as the box, as measured in S1, but the citation is marked "outside" for review."""
@@ -183,7 +183,7 @@ def _caption_merged(word: str, value: str) -> bool:
     return (w.endswith(v) and not w[-len(v) - 1].isalnum()) or (w.startswith(v) and not w[len(v)].isalnum())
 
 
-def _place(ids: list[int], words: dict[int, Word]) -> tuple[Box | None, int | None]:
+def place(ids: list[int], words: dict[int, Word]) -> tuple[Box | None, int | None]:
     if not ids:
         return None, None
     page = Counter(words[i].page for i in ids).most_common(1)[0][0]
@@ -202,8 +202,8 @@ def build(raw: list[dict[str, Any]], schema: Schema, doc: Document) -> tuple[lis
             dropped += 1
             continue
         cited = [i for i in (_int(x) for x in a.get("word_ids") or []) if i is not None and i in words]
-        evidence, citation = _evidence(value, cited, words)
-        box, page = _place(evidence, words)
+        evidence, citation = cite_check(value, cited, words)
+        box, page = place(evidence, words)
         item = _int(a.get("item")) if spec.group else None
         out.append(
             Extracted(

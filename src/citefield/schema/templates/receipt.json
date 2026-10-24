@@ -12,6 +12,7 @@
     {"name": "item.unit_price", "kind": "amount", "description": "unit price, only if printed", "group": "item"},
     {"name": "item.total", "kind": "amount", "description": "line total", "group": "item"},
     {"name": "subtotal", "kind": "amount", "description": "subtotal before tax"},
+    {"name": "discount", "kind": "amount", "description": "discount on the whole document, only if printed"},
     {"name": "tax", "kind": "amount", "description": "tax amount; one entry per printed tax amount"},
     {"name": "total", "kind": "amount", "description": "grand total"},
     {"name": "tendered", "kind": "amount", "description": "cash given"},
@@ -19,7 +20,7 @@
   ],
   "rules": [
     {"type": "sum", "of": "item.total", "equals": "subtotal", "fallback": "total"},
-    {"type": "add", "terms": ["subtotal", "tax"], "equals": "total"},
+    {"type": "add", "terms": ["subtotal", "tax"], "minus": ["discount"], "equals": "total"},
     {"type": "add", "terms": ["tendered"], "minus": ["total"], "equals": "change"},
     {"type": "product", "factors": ["item.quantity", "item.unit_price"], "equals": "item.total"}
   ]

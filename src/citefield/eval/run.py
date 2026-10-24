@@ -68,7 +68,7 @@ def _preds(fields: list[Extracted]) -> list[Pred]:
 
 
 TRIGGERS = (  # reason text -> trigger, most specific first
-    ("also cited as", "collision"),
+    ("is also cited as", "collision"),
     ("second read", "second_read"),
     ("confidence", "confidence"),
     ("does not hold", "rule"),

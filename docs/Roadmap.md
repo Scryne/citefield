@@ -15,8 +15,8 @@ Durum sütunu session-start hook'u tarafından otomatik okunur — format bozulm
 | 2 | Okuma katmanı | ✅ Tamamlandı | PDF (metin katmanlı + taranmış) ve görselden sayfa görüntüsü + kimlikli kelimeler; CORD'da S1'in OCR kapsaması (%91,6 ± 1) yeniden üretildi; metin katmanı yolu sentetik PDF'te OCR yoluna karşı ölçüldü |
 | 3 | Çıkarım ve kanıt | ✅ Tamamlandı | Sağlayıcı arayüzü (Anthropic + OpenAI-uyumlu/Ollama); okuma 1 + okuma 2 + alıntı doğrulama + tip kapısı (K-Satır ölçülüp çıkarıldı); `citefield eval` S1 sayılarını (CORD değer ≥ %90, konum ≥ %95; FATURA ≥ %98/98) yeniden üretiyor; belge başı token/$ raporda |
 | 4 | Doğrulama ve inceleme kararı | ✅ Tamamlandı | Kurallar (satır toplamı, ara toplam + vergi = toplam, tarih/para biçimi, VKN/TCKN/IBAN sağlama) + 5 inceleme tetiği; eval'da yakalama oranı ve otomatik onay payı raporlanıyor; otomatik onaylanan yanlışlar listeleniyor |
-| 5 | Depolama, API, dışa aktarım | 🔄 Devam Ediyor | SQLite + Alembic; REST (yükle, durum, alanlar, düzelt/onayla, dışa aktar); JSON/CSV/XLSX; `citefield extract` CLI; API testleri gerçek bir belgeyi uçtan uca geçiriyor |
-| 6 | İnceleme arayüzü | ⏳ Bekliyor | `DESIGN.md` dolu ve lint'ten geçti; yan yana belge/alanlar, kutu vurgusu, gerekçeli kuyruk, düzelt/kutu yeniden seç/onayla, klavye kısayolları; Playwright uçtan uca testi + `gorsel-dogrulama` dört genişlikte temiz |
+| 5 | Depolama, API, dışa aktarım | ✅ Tamamlandı | SQLite + Alembic; REST (yükle, durum, alanlar, düzelt/onayla, dışa aktar); JSON/CSV/XLSX; `citefield extract` CLI; API testleri gerçek bir belgeyi uçtan uca geçiriyor |
+| 6 | İnceleme arayüzü | 🔄 Devam Ediyor | `DESIGN.md` dolu ve lint'ten geçti; yan yana belge/alanlar, kutu vurgusu, gerekçeli kuyruk, düzelt/kutu yeniden seç/onayla, klavye kısayolları; Playwright uçtan uca testi + `gorsel-dogrulama` dört genişlikte temiz |
 | 7 | Paketleme ve ölçüm yayını | ⏳ Bekliyor | `uvx citefield serve` ve `docker compose up` temiz makinede tek komutla açılıyor; README İngilizce, ölçüm tablosu `citefield eval` çıktısından üretiliyor; demo GIF açık veri belgesiyle; `yayin-oncesi` çıkış 0 |
 | 8 | Gerçek kullanım | ⏳ Bekliyor | Repo public + PyPI yayını (Scryne onayıyla); lansman gönderileri; ≥ 3 dış kişinin kendi belgesiyle çalıştırdığına dair kanıt; bulgular roadmap'e işlendi |
 
@@ -77,7 +77,7 @@ Faz 1 ve son faz şablonla gelir: biri projenin sessizce çürümesini engeller 
   - Dışa aktarım.
   - CLI.
 - **Bitti Kriteri:** tabloda.
-- **Notlar:**
+- **Notlar:** ✅ 2026-10-24. SQLite (WAL) + Alembic `0001`, süreç içi işçi (kilitlenme sonrası `processing` → kuyruk), FastAPI: yükle / liste / belge / sayfa PNG / kelimeler / alan düzelt-yeniden alıntıla-onayla / dışa aktar / sil; JSON, CSV (formül enjeksiyonu nötr, işaretli sayı korunur), XLSX (alanlar + kalemler sayfası). `citefield extract|serve|eval`. 10 API testi gerçek PDF'le (model sahte), 7 mutasyon yakalandı. Canlı koşu (`serve` + claude-code, FATURA faturası) iki sorun gösterdi, düzeltildi: fatura/fiş şablonunda belge indirimi yoktu (kural haksız düşüyordu); alıntı çakışması '$' sembolünü '$33.10' fiyatıyla çakışma sayıyordu → artık yalnız aynı değer iki rolde. Aynı faturada kuralın hâlâ düşmesi belgenin kendi tutarsızlığı (239,53 ≠ 238,81). Kimlik doğrulama yok: `serve` 127.0.0.1'e bağlanır, README'de yazılacak.
 
 ### Faz 6: İnceleme arayüzü
 - **İşler:**
