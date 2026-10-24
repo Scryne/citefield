@@ -50,9 +50,10 @@ TenderIQ (Docling, OCR, kaynağa izlenebilir analiz), AEGIS (çok kiracılı, RL
 
 ## v1: Kapsam ve "Bitti" Tanımı
 - **Süre tavanı:** ~4 hafta. v1 = açık kaynak motor + inceleme arayüzü, tek kullanıcı, self-host. SaaS v2'ye gider.
-- **Bitti = kullanıldı:** (taslak, denetimde kesinleşir) Scryne gerçek bir Tezgah siparişini ya da gerçek bir fatura
-  yığınını (≥20 belge) okur ile işler, onaylı çıktı alıcıya gider; ölçülen alan doğruluğu ve "düşük güven → gerçekten
-  yanlış" oranı README'de yayımlanır. Artı en az bir dış kişi motoru kendi belgesiyle kurup çalıştırır.
+- **Bitti = kullanıldı:** Scryne'ın elinde gerçek belge yok (10-24 kararı: yalnız açık veri). Bu yüzden v1 iki
+  parçada biter: (a) açık fatura/fiş veri setlerinde ölçülen alan doğruluğu ve kalibrasyon ("düşük güven → gerçekten
+  yanlış" oranı) README'de yayımlanır; (b) public lansmandan sonra en az 3 dış kişi motoru kendi belgesiyle kurup
+  çalıştırır (issue/discussion/geri bildirim kanıtı). (b) olmadan v1 "yayında" sayılır, "bitti" sayılmaz.
 - **Temel özellikler:**
   1. Belge alma (PDF, görsel) → sayfa görüntüsü + metin katmanı + koordinatlar
   2. Şema tanımı (JSON tabanlı) + hazır fatura şablonu
@@ -66,13 +67,17 @@ TenderIQ (Docling, OCR, kaynağa izlenebilir analiz), AEGIS (çok kiracılı, RL
 Çok kiracılı SaaS, ödeme, ekip/rol, webhook (v2) · e-Fatura XML/GİB entegrasyonu · muhasebe programı
 entegrasyonları · el yazısı · model eğitimi/ince ayar · mobil uygulama.
 
+## Kararlar (denetim, 2026-10-24)
+- **Dil:** İngilizce (README, arayüz, doküman); Türkçe arayüz ikinci dil olarak sonra.
+- **Ad:** "Okur" çalışma adı; İngilizce ad aranıyor (aday + çakışma kontrolü), Scryne seçer.
+- **Repo:** v1'e kadar private GitHub reposu; public'e geçiş lansmanda, `yayin-oncesi` kapısından sonra.
+- **Değerlendirme verisi:** yalnız açık veri setleri. Kişisel veri içeren belge repoya girmez.
+
 ## Açık Sorular
 - ~~**Rakip farkı**~~ → kapandı (2026-10-24, yukarıda "Fark"). Açık kalan: HN talep sinyali doğrulanamadı.
-- **Dil/kitle:** README, arayüz ve dokümanlar İngilizce mi (global OSS), Türkçe ikinci dil mi?
 - **Çıkarım yolu:** LLM (Claude / NIM / yerel) mi, kural + yerleşim mi, karma mı? Maliyet ve self-host'ta LLM'siz çalışma.
 - **Anlam kararları:** belge türü sınıflandırma ve çıkarılan değerin doğrulanması için TypeSafe (Jev) adayı; spike'la denenecek.
 - **Riskli kararlar (spike):** S1 LLM çıktısını belgedeki kutuya geri bağlama; S2 güven skoru gerçekten yanlışları
   ayırıyor mu (kalibrasyon); S3 GPU'suz/ucuz çalıştırmada kalite.
-- **Ad** ve **lisans** seçimi (open-core).
-- Değerlendirme seti: gerçek belgeler nereden (Tezgah örnekleri, açık fatura veri setleri)? Kişisel veri içeren
-  belgeler repoya girmez.
+- **Lisans** seçimi (open-core).
+- **Değerlendirme seti:** hangi açık veri setleri (alan + kutu etiketli fatura/fiş), erişim ve kullanım koşulları.
