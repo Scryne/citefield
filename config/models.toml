@@ -1,0 +1,14 @@
+# Model identifiers live here, never in code: a retired model is a one-line change.
+# Measured choices: docs/Final-Dokuman.md (S1 and S3 spikes).
+
+[providers.anthropic]
+model = "claude-sonnet-5-5"   # reference quality; S1 was measured with Sonnet
+
+[providers.ollama]
+base_url = "http://127.0.0.1:11434/v1"
+model = "qwen3-vl:8b"         # private mode; S3: value accuracy on par, receipt location 87%
+
+[providers.claude-code]
+# Development and evaluation only: runs `claude -p` on the developer's own Claude Code login. The spikes were measured
+# this way, so `citefield eval` can reproduce them without an API key.
+model = "sonnet"

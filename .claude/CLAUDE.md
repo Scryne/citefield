@@ -14,14 +14,14 @@ bittiğinde `asama` alanını sırayla güncelle: `fikir` → `denetim` → `fin
 
 Hook'lar (`.claude/hooks/`) `proje-baslat` şablonunun birebir kopyasıdır; burada elle
 değiştirilmez. Kanonik roadmap `docs/Roadmap.md` dışında bir dosyaysa `state.json`'a
-`"roadmap": "docs/<dosya>.md"` yazılır, iki hook da onu Citefield.
+`"roadmap": "docs/<dosya>.md"` yazılır, iki hook da onu okur.
 
 ## Dosyalar
 
 - `docs/Proje-Fikri.md` — ilk fikir
 - `docs/Final-Dokuman.md` — nihai kararlar (teknoloji stack, mimari, riskler)
 - `docs/Roadmap.md` — fazlı yol haritası; her faz "Durum" sütunuyla takip edilir, hook bunu
-  otomatik Citefield
+  otomatik okur
 - `DESIGN.md` (proje kökünde) — bu projeye özel frontend kimliği. Kesin değerler
   frontmatter'da, gerekçe Markdown'da.
 

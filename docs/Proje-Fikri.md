@@ -21,8 +21,8 @@ en büyük OSS IDP reposu py-idp 297★). Rakip analizi (`docs/arastirma/rakip-a
 Marker parser seviyesinde kalıyor; hepsini birleştiren repolar 0★. Ticari tarafta Reducto ($0.02/sf.), Mindee,
 Rossum bunu sunuyor.
 
-**Fark:** inceleme kuyruğu + kaynak kutusu açık çekirdekte, doğrulama birinci sınıf, güven kalibre edilip ölçümü
-yayımlanır, GPU'suz tek komutla kurulur. Türkiye notu: e-Fatura zaten XML; Türk pazarı (yerli rakip ~0,4 TL/belge)
+**Fark:** inceleme kuyruğu + kaynak kutusu açık çekirdekte, doğrulama birinci sınıf, inceleme kararları gerekçeli ve
+yakalama oranı ölçülüp yayımlanır (S2 sonrası düzeltildi; ilk hali "güven kalibre edilir" idi), tek komutla kurulur. Türkiye notu: e-Fatura zaten XML; Türk pazarı (yerli rakip ~0,4 TL/belge)
 gelir için zayıf, kitle önce global, Türkiye paketi sonra.
 
 ## Ne yapar
@@ -75,8 +75,8 @@ entegrasyonları · el yazısı · model eğitimi/ince ayar · mobil uygulama.
 
 ## Açık Sorular
 - ~~**Rakip farkı**~~ → kapandı (2026-10-24, yukarıda "Fark"). Açık kalan: HN talep sinyali doğrulanamadı.
-- **Çıkarım yolu:** LLM (Claude / NIM / yerel) mi, kural + yerleşim mi, karma mı? Maliyet ve self-host'ta LLM'siz çalışma.
-- **Anlam kararları:** belge türü sınıflandırma ve çıkarılan değerin doğrulanması için TypeSafe (Jev) adayı; spike'la denenecek.
+- ~~**Çıkarım yolu**~~ → kapandı: görsel LLM + kimlikli kelimeler, sağlayıcı soyut (`docs/Final-Dokuman.md`). İlk soru: LLM (Claude / NIM / yerel) mi, kural + yerleşim mi, karma mı? Maliyet ve self-host'ta LLM'siz çalışma.
+- ~~**Anlam kararları**~~ → kapandı: v1'de yok, TypeSafe v2'de yeniden açılır (Final-Dokuman). İlk soru: belge türü sınıflandırma ve çıkarılan değerin doğrulanması için TypeSafe (Jev) adayı; spike'la denenecek.
 - **Riskli kararlar (spike):** ~~S1 kaynak eşleme~~ ✅ 2026-10-24 (`spikes/s1-kaynak-esleme/SONUC.md`): görsel + kimlikli
   OCR kelimeleri + alıntı doğrulama; konum CORD %97,1, FATURA %100; OCR RapidOCR. ~~S2 güven~~ (`spikes/s2-guven/SONUC.md`):
   CORD'da eşik altı (etiket gürültüsü), sentetikte 1.428'de 4 yanlış → ölçülemedi; tasarıma çevrildi: gerekçeli inceleme
@@ -86,5 +86,5 @@ entegrasyonları · el yazısı · model eğitimi/ince ayar · mobil uygulama.
   v1 işi; yalnız-metin model fişte %45–50; CPU v1'de yok. Çeşitli ikinci okuma: farklı model
   gerçek hataların 2/5'ini, %16 yanlış alarmla yakaladı ❌; aynı modelin yalnız-görsel yolu 4/5'ini %1,5 alarmla →
   ikinci okuma = farklı girdi yolu (hipotez, n=5).
-- **Lisans** seçimi (open-core).
-- **Değerlendirme seti:** hangi açık veri setleri (alan + kutu etiketli fatura/fiş), erişim ve kullanım koşulları.
+- ~~**Lisans**~~ → AGPL-3.0 (Final-Dokuman).
+- ~~**Değerlendirme seti**~~ → CORD v2, FATURA, sentetik fiş (`docs/arastirma/veri-setleri.md`). İlk soru: hangi açık veri setleri (alan + kutu etiketli fatura/fiş), erişim ve kullanım koşulları.

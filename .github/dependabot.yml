@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule: { interval: "weekly" }
+    groups: { python: { patterns: ["*"] } }
+    open-pull-requests-limit: 3
+  - package-ecosystem: "npm"
+    directory: "/ui"
+    schedule: { interval: "weekly" }
+    groups: { ui: { patterns: ["*"] } }
+    open-pull-requests-limit: 3
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule: { interval: "weekly" }
+    groups: { actions: { patterns: ["*"] } }
