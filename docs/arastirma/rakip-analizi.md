@@ -53,3 +53,13 @@ docling-project.github.io/docling/concepts/confidence_scores · github.com/datal
 developers.llamaindex.ai/llamaparse/extract · docs.mindee.com · knowledge-base.rossum.ai (eşik) · aws.amazon.com/textract/pricing ·
 learn.microsoft.com (Document Intelligence dil desteği, 2026-10-19) · rahataktarim.com · mihsap.com/blog/fatura-isleme ·
 support.humansignal.com (Label Studio review Enterprise).
+
+## Ek (2026-10-24, ad kontrolünden çıktı): doğrudan rakip
+- **tracefield.io** (© 2026, altbilgi "EMINCAN.COM"; ekip/tarih belirtilmemiş): aynı konsept. Değer + kaynak metni + belgede
+  konum ("every value proves where it came from"), çözülemeyen değer incelemeye düşer ("unverified never auto-passes"),
+  aritmetik çapraz kontrol, onay/düzelt/reddet kuyruğu + denetim izi, tedarikçi listesiyle doğrulama, CSV/JSON + MCP,
+  imzalı webhook. Fiyat: $0 (5 belge), $49/ay (500), $199/ay (2.500); hepsi erken erişimde ücretsiz. "Runtime MIT" diyor
+  ama GitHub bağlantısı yok; ürünün geri kalanı kapalı. Alan bazında güven skorunun anlamı açıklanmamış.
+- **LedgerLens SDK** (npm, 2026-01): "Document Intelligence API with math verification", repo 0xShortx/ledgerlens.
+- Etki: konsept doğrulandı ve 2026'da kalabalıklaşıyor. Okur'un farkı açık kaynak olmasında kalıyor: tüm ürün (inceleme
+  kuyruğu dahil) açık, self-host tek komut, kalibrasyon ve doğruluk açık veri setlerinde ölçülüp yayımlanıyor.
