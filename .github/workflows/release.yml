@@ -1,0 +1,47 @@
+name: Release
+# Runs only when a version tag is pushed (git tag v0.1.0 && git push origin v0.1.0). Publishing uses PyPI trusted
+# publishing: add this repository and workflow as a trusted publisher on pypi.org first; until then the publish job fails
+# without side effects.
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      # the review UI is built into src/citefield/web and shipped inside the wheel (citefield serve)
+      - run: npm ci && npm run build
+        working-directory: ui
+      - uses: astral-sh/setup-uv@v7
+      - name: Tag matches the package version
+        run: |
+          version=$(uv version --short)
+          test "v$version" = "$GITHUB_REF_NAME" || { echo "tag $GITHUB_REF_NAME != version $version"; exit 1; }
+      - run: uv build
+      - name: Wheel contains the UI
+        run: python -c "import glob, zipfile, sys; n = zipfile.ZipFile(glob.glob('dist/*.whl')[0]).namelist(); sys.exit(0 if 'citefield/web/index.html' in n else 'web UI missing from wheel')"
+      - run: uvx twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

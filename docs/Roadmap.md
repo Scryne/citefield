@@ -112,6 +112,10 @@ Faz 1 ve son faz şablonla gelir: biri projenin sessizce çürümesini engeller 
 - **Notlar:** ✅ 2026-10-24. Araştırmadan alınanlar adıyla: engel özeti şeridi (Rossum "automation blockers"), satır kalemi ızgarası (Docsumo/Rossum), bulunamayan şema alanlarını boş göstermek (AWS A2I), editör/JSON geçişi (Sensible), başarısız belgeyi yeniden okuma (Mindee "Rerun"). Görsel stil belgelerden doğrulanamadı; palet `ui-ux-pro-max` (kurumsal güven: lacivert + tek mavi vurgu, "AI mor gradyan"dan kaçın). Eski koyu çivit/glow kimliği bu yüzden bırakıldı; global glassmorphism varsayılanından DESIGN.md ile çıkıldı. Durum üçlüsü dataviz doğrulayıcısından geçti: ilk camgöbeği 'düzeltildi' yeşilden 10,8 ΔE uzaktaydı (normal görüşte bile ayırt edilmez), mora alındı. Sayfa kutuları iki temada da açık ton (kağıt beyaz). Testlerin yakaladığı gerçek hatalar: yükleme penceresinde dosya seçiciyle seçilen dosyalar hiç eklenmiyordu (canlı FileList, input sıfırlanınca boşalıyordu); 390 px'te `sr-only` başlık metni kaydırma kutusundan kaçıp sayfayı 339 px taşırıyordu; tablo `max-w-0` hilesiyle dosya adı sütunu sıfıra çöküyordu (telefonda artık liste). Base UI sekmelerinde seçili öznitelik `data-active` (`data-selected` değil). 88 Python testi (yeni uçlar 5 test), 6 Playwright testi. Ekran görüntüleri açık veriden (CORD/FATURA), değerlendirme önbelleğindeki okumalarla: canlı model çağrısı yok.
 
 ### Faz 8: Gerçek kullanım
+- **Hazırlık (2026-10-26, denetim):** paket PyPI'ya hazır: `uv build` wheel + sdist, `twine check` geçti, temiz ortama
+  kurulan wheel'de `citefield serve` arayüzü ve API'yi sundu. pyproject'e yazar (Scryne), anahtar kelime, sınıflandırıcı ve
+  bağlantılar eklendi. `.github/workflows/release.yml`: `v*` etiketi → arayüzü derle, sürüm = etiket kontrolü, wheel'de
+  arayüz kontrolü, twine, PyPI trusted publishing. Yayın günü: pypi.org'da trusted publisher tanımla, `git tag v0.1.0`.
 - **İşler:**
   - Scryne onayıyla: repo public, PyPI yayını, lansman (Show HN, r/selfhosted, ilgili topluluklar).
   - Gelen issue'lara cevap.

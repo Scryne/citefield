@@ -5,6 +5,21 @@ description = "Self-hosted document field extraction where every value points to
 readme = "README.md"
 requires-python = ">=3.11"
 license = "AGPL-3.0-only"
+authors = [{ name = "Scryne" }]
+keywords = ["document extraction", "idp", "invoice", "ocr", "llm", "human-in-the-loop", "provenance"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Web Environment",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial :: Accounting",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
 dependencies = [
     "alembic>=1.20.1",
     "anthropic>=2.3.0",
@@ -20,6 +35,11 @@ dependencies = [
     "uvicorn[standard]>=0.54.0",
     "xlsxwriter>=3.3.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Scryne/citefield"
+Issues = "https://github.com/Scryne/citefield/issues"
+Changelog = "https://github.com/Scryne/citefield/releases"
 
 [project.scripts]
 citefield = "citefield.cli:main"
