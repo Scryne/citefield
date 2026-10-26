@@ -12,11 +12,12 @@ from importlib import resources
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
-from fastapi import Body, FastAPI, File, Form, HTTPException, Query, Response, UploadFile
-from fastapi.responses import FileResponse
+from fastapi import Body, FastAPI, File, Form, HTTPException, Query, Request, Response, UploadFile
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy import func, select
+from sqlalchemy.orm import selectinload
 
 from citefield import __version__, providers
 from citefield.export import FORMATS, MANY_FORMATS
@@ -151,6 +152,17 @@ def create_app(data_dir: Path, provider: Callable[[], Provider] | None = None, *
     app = FastAPI(title="Citefield", version=__version__, lifespan=lifespan)
     app.state.service = service
 
+    @app.middleware("http")
+    async def upload_limit(request: Request, call_next: Callable[[Request], Any]) -> Any:
+        # the multipart body is parsed (and spooled to disk) before the endpoint runs: refuse a too large one up front
+        if request.method == "POST" and request.url.path == "/api/documents":
+            size = request.headers.get("content-length", "")
+            if size.isdigit() and int(size) > MAX_UPLOAD + 1024 * 1024:  # 1 MB of room for the multipart framing
+                return JSONResponse(
+                    {"detail": f"file is larger than {MAX_UPLOAD // (1024 * 1024)} MB"}, status_code=413
+                )
+        return await call_next(request)
+
     def get_doc(s: Any, doc_id: str) -> DocumentRow:
         d = s.get(DocumentRow, doc_id)
         if d is None:
@@ -196,14 +208,23 @@ def create_app(data_dir: Path, provider: Callable[[], Provider] | None = None, *
         today = datetime.now(UTC).date()
         start = today - timedelta(days=days - 1)
         with service.store.session() as s:
-            docs = s.scalars(select(DocumentRow)).all()
-            by_status = Counter(d.status for d in docs)
-            fields = Counter(f.status for d in docs for f in d.fields)
+            # counted in the database, reading only the columns the totals need (no per-document field queries)
+            by_status = Counter(
+                dict(s.execute(select(DocumentRow.status, func.count()).group_by(DocumentRow.status)).all())
+            )
+            fields = Counter(dict(s.execute(select(FieldRow.status, func.count()).group_by(FieldRow.status)).all()))
             # once per check that sent a field to review, also after a person cleared it: the reasons stay
-            triggers = Counter(t for d in docs for f in d.fields for t in {trigger(r) for r in f.reasons})
-            per_day = Counter(_utc(d.created_at).date() for d in docs)
-            seconds = [sum(r.get("seconds", 0) for r in d.usage.get("reads", [])) for d in docs if d.status == "ready"]
-            schemas = Counter(d.schema_name for d in docs)
+            triggers = Counter(
+                t for reasons in s.scalars(select(FieldRow.reasons)) for t in {trigger(r) for r in reasons or []}
+            )
+            per_day = Counter(_utc(t).date() for t in s.scalars(select(DocumentRow.created_at)))
+            seconds = [
+                sum(r.get("seconds", 0) for r in (u or {}).get("reads", []))
+                for u in s.scalars(select(DocumentRow.usage).where(DocumentRow.status == "ready"))
+            ]
+            schemas = Counter(
+                dict(s.execute(select(DocumentRow.schema_name, func.count()).group_by(DocumentRow.schema_name)).all())
+            )
         checked = sum(fields.values())
         return {
             "documents": {k: by_status[k] for k in ("queued", "processing", "ready", "failed")},
@@ -263,7 +284,7 @@ def create_app(data_dir: Path, provider: Callable[[], Provider] | None = None, *
     async def upload(
         file: Annotated[UploadFile, File()], schema_name: Annotated[str, Form(alias="schema")] = "invoice"
     ) -> dict[str, str]:
-        data = await file.read()
+        data = await file.read(MAX_UPLOAD + 1)  # bounded: one byte past the limit is enough to refuse it
         try:
             doc_id = service.submit(file.filename or "document", data, schema_name)
         except FileNotFoundError:
@@ -275,7 +296,9 @@ def create_app(data_dir: Path, provider: Callable[[], Provider] | None = None, *
     @app.get("/api/documents", response_model=list[DocumentSummary])
     def documents() -> list[dict[str, Any]]:
         with service.store.session() as s:
-            rows = s.scalars(select(DocumentRow).order_by(DocumentRow.created_at.desc())).all()
+            rows = s.scalars(
+                select(DocumentRow).options(selectinload(DocumentRow.fields)).order_by(DocumentRow.created_at.desc())
+            ).all()
             return [_summary(d) for d in rows]
 
     @app.get("/api/documents/{doc_id}", response_model=DocumentOut)

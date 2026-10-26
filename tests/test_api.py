@@ -159,6 +159,16 @@ def test_upload_size_limit(tmp_path, monkeypatch):
     assert "larger than" in upload(c).json()["detail"]
 
 
+def test_oversized_upload_is_refused_before_parsing(tmp_path):
+    c, _ = client(tmp_path, FakeProvider())
+    r = c.post(
+        "/api/documents",
+        content=b"x",
+        headers={"content-length": str(200 * 1024 * 1024), "content-type": "multipart/form-data; boundary=b"},
+    )
+    assert r.status_code == 413 and "larger than" in r.json()["detail"]
+
+
 def test_provider_failure_is_recorded_and_export_refused(tmp_path):
     class Broken(FakeProvider):
         def read(self, *a, **k):
