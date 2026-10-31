@@ -103,7 +103,7 @@ export function Documents() {
         actions={upload}
       />
 
-      <div role="group" aria-label="Filter by status" className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-4">
+      <div role="group" aria-label="Filter by status" className="-mx-1 flex flex-wrap gap-1 px-1 pb-4">
         {TABS.map((t) => {
           const n = all.filter(t.match).length
           const active = t.id === tab
