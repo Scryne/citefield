@@ -15,13 +15,32 @@ interface Item {
   id?: string
 }
 
+const LAST_SCHEMA_KEY = 'citefield.upload.schema'
+
+/** The schema used last in this browser: a receipt batch should not fall back to `invoice` on the next upload. */
+function lastSchema(): string | null {
+  try {
+    return localStorage.getItem(LAST_SCHEMA_KEY)
+  } catch {
+    return null
+  }
+}
+
 /** Upload one or more files under one schema. Each file reports on its own line; one failure does not stop the rest. */
-export function UploadDialog({ trigger, defaultSchema = 'invoice' }: { trigger: ReactNode; defaultSchema?: string }) {
+export function UploadDialog({ trigger, defaultSchema }: { trigger: ReactNode; defaultSchema?: string }) {
   const qc = useQueryClient()
   const inputId = useId()
   const fileInput = useRef<HTMLInputElement>(null)
   const [open, setOpen] = useState(false)
-  const [schema, setSchema] = useState(defaultSchema)
+  const [schema, setSchemaState] = useState(() => defaultSchema ?? lastSchema() ?? 'invoice')
+  const setSchema = (name: string) => {
+    setSchemaState(name)
+    try {
+      localStorage.setItem(LAST_SCHEMA_KEY, name)
+    } catch {
+      // private mode / blocked storage: the choice simply is not remembered
+    }
+  }
   const [items, setItems] = useState<Item[]>([])
   const [dragging, setDragging] = useState(false)
   const schemas = useQuery({ queryKey: ['schemas'], queryFn: api.schemas, enabled: open })
