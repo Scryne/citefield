@@ -1,17 +1,30 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Tooltip } from '@base-ui/react/tooltip'
 import { FileQuestion } from 'lucide-react'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { AppShell, Page } from './components/AppShell'
-import { Card, EmptyState } from './components/ui'
+import { Card, EmptyState, Skeleton } from './components/ui'
 import { buttonClass } from './components/styles'
 import { linkProps, useLocation } from './lib'
-import { Documents } from './pages/Documents'
 import { Overview } from './pages/Overview'
-import { Review } from './pages/Review'
-import { SchemaDetail } from './pages/SchemaDetail'
-import { Schemas } from './pages/Schemas'
-import { Settings } from './pages/Settings'
+
+// Sayfa başına parça: tek JS dosyası 565 kB'tı. Açılış sayfası (Overview) ana parçada kalır, gerisi ilk ziyarette iner.
+const Documents = lazy(() => import('./pages/Documents').then((m) => ({ default: m.Documents })))
+const Review = lazy(() => import('./pages/Review').then((m) => ({ default: m.Review })))
+const SchemaDetail = lazy(() => import('./pages/SchemaDetail').then((m) => ({ default: m.SchemaDetail })))
+const Schemas = lazy(() => import('./pages/Schemas').then((m) => ({ default: m.Schemas })))
+const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings })))
+
+function PageLoading() {
+  return (
+    <Page>
+      <div aria-busy="true" aria-label="Loading" className="flex flex-col gap-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-40 w-full" />
+      </div>
+    </Page>
+  )
+}
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } })
 
@@ -67,7 +80,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <Tooltip.Provider delay={300}>
         <AppShell>
-          <Routes />
+          <Suspense fallback={<PageLoading />}>
+            <Routes />
+          </Suspense>
         </AppShell>
       </Tooltip.Provider>
     </QueryClientProvider>
