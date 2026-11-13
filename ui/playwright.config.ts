@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test'
 
-const PORT = 8497
+// E2E_PORT: run beside another app on a free port; CI uses the default
+const PORT = Number(process.env.E2E_PORT ?? 8497)
 
 // The built UI (npm run build) is served by the real Python app with a fake model (tests/e2e_server.py).
 export default defineConfig({
