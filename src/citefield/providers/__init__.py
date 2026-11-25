@@ -41,7 +41,11 @@ def get(name: str, model: str | None = None, **options: Any) -> Provider:
         from citefield.providers.anthropic import AnthropicProvider
 
         return AnthropicProvider(**conf)
-    if name in ("openai", "ollama"):
+    if name == "ollama":
+        from citefield.providers.ollama import OllamaProvider
+
+        return OllamaProvider(**conf)
+    if name == "openai":
         from citefield.providers.openai_compat import OpenAICompatibleProvider
 
         return OpenAICompatibleProvider(name=name, **conf)

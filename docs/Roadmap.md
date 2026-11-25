@@ -121,4 +121,7 @@ Faz 1 ve son faz şablonla gelir: biri projenin sessizce çürümesini engeller 
   - Gelen issue'lara cevap.
   - İlk 3 dış kullanıcının kanıtı.
 - **Bitti Kriteri:** tabloda.
+- **2026-11-25 (yayına hazır turu):** repo artık public (10-27 temiz geçmişle taşındı). Yerel modelle ilk gerçek veri
+  denemesi dört kusur buldu ve kapattı (Ollama penceresi, düşünme kipi, boş cevabın "hazır" görünmesi, servis bedeli);
+  ayrıntı `DURUM.md`. Kalan: PyPI trusted publisher + `v0.1.0` etiketi, lansman, 3 dış kullanıcı (hepsi Scryne'da).
 - **Notlar:** 2026-10-24 Scryne kararı: repo şimdilik private, geçmişteki kişisel commit e-postasına dokunulmuyor (public'ten önce temizlik zorunlu: temiz geçmişle yeniden açma ya da filter-repo); Anthropic API canlı denemesi yapılmadı (README'de not); public/PyPI/lansman/Haiku ayrılmış ölçümü için onay yok, bekliyor.

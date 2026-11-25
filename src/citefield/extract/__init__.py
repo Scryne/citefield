@@ -122,8 +122,9 @@ def output_schema(schema: Schema, cited: bool) -> dict[str, Any]:
     }
 
 
-def parse_fields(text: str) -> list[dict[str, Any]]:
-    """The first JSON object with a "fields" list; survives prose or a second block after it (S1, fatura-04)."""
+def read_fields(text: str) -> list[dict[str, Any]] | None:
+    """The first JSON object with a "fields" list; survives prose or a second block after it (S1, fatura-04).
+    None when the answer holds no such object at all (cut short, prose only), which is not the same as an empty list."""
     dec = json.JSONDecoder()
     i = text.find("{")
     while i != -1:
@@ -134,7 +135,16 @@ def parse_fields(text: str) -> list[dict[str, Any]]:
         except json.JSONDecodeError:
             pass
         i = text.find("{", i + 1)
-    return []
+    return None
+
+
+def parse_fields(text: str) -> list[dict[str, Any]]:
+    return read_fields(text) or []
+
+
+class UnreadableAnswer(RuntimeError):
+    """The main read gave no field list. Recording it as "no fields" would show an empty, finished document
+    (2026-11-25: a receipt with 11 lines came back "ready" with 0 values because Ollama cut the JSON short)."""
 
 
 def _int(v: Any) -> int | None:
@@ -222,7 +232,13 @@ def extract(
         jobs.append((secondary_prompt(schema), output_schema(schema, False) if structured else None))
     with ThreadPoolExecutor(len(jobs)) as pool:
         reads = list(pool.map(lambda j: provider.read(j[0], images, j[1]), jobs))
-    fields, dropped = build(parse_fields(reads[0].text), schema, doc)
+    raw = read_fields(reads[0].text)
+    if raw is None:
+        raise UnreadableAnswer(
+            "The model's answer had no readable list of fields, so nothing was extracted. Read the document again; "
+            "if it fails again, the model is likely cutting its answer short."
+        )
+    fields, dropped = build(raw, schema, doc)
     others: list[Extracted] = []
     if second:
         for a in parse_fields(reads[1].text):

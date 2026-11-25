@@ -58,7 +58,7 @@ def test_failed_sum_flags_every_field_in_it():
     v = verify(Extraction(fields, second_of(fields)), RECEIPT)
     flagged = {fields[i].field + str(fields[i].item) for i, d in enumerate(v.decisions) if d.status == "review"}
     assert flagged == {"item.total1", "item.total2", "subtotalNone"}
-    assert any(r.outcome == "fails" and r.detail == "8 != 7.5" for r in v.rules)
+    assert any(r.outcome == "fails" and r.detail == "8 ≠ 7.5" for r in v.rules)
 
 
 def test_change_rule_and_tolerance():
@@ -127,6 +127,23 @@ def test_a_rule_without_its_first_term_is_skipped_not_failed():
     assert any(r.rule.startswith("subtotal + tax") and r.outcome == "skipped" for r in v.rules)
 
 
+def test_a_printed_service_charge_counts_toward_the_total():
+    """CORD validation 41 (2026-11-25): 2,000,000 + tax 212,460 + service 140,000 = 2,352,460. Without a service field
+    the rule failed and sent all four amounts to review on every receipt with a service charge."""
+    fields = [
+        E("item.name", "SOGOGI JAPCHAE", 1),
+        E("item.total", "2,000,000", 1),
+        E("subtotal", "2,000,000"),
+        E("service", "140,000"),
+        E("tax", "212,460"),
+        E("total", "2,352,460"),
+    ]
+    v = verify(Extraction(fields, second_of(fields)), RECEIPT)
+    add = next(r for r in v.rules if r.rule.startswith("subtotal + tax"))
+    assert add.outcome == "holds" and "service" in add.rule
+    assert [d.status for d in v.decisions] == ["auto"] * len(fields), [d.reasons for d in v.decisions]
+
+
 def test_tax_inclusive_line_prices_may_add_up_to_the_total():
     """CORD: line prices include tax, the subtotal is printed before tax."""
     fields = [
@@ -149,3 +166,17 @@ def test_a_symbol_cited_from_inside_a_price_is_not_a_collision():
     ]
     v = verify(Extraction(fields, second_of(fields)), schema)
     assert all(d.status == "auto" for d in v.decisions), [d.reasons for d in v.decisions]
+
+
+def test_a_failing_rule_reads_with_grouped_numbers():
+    """CORD validation 41: 7 x 105,000 against a printed line total of 105,000 read "735000 != 105000"."""
+    fields = [
+        E("item.name", "GONG GIBAB", 1),
+        E("item.quantity", "7", 1),
+        E("item.unit_price", "105,000", 1),
+        E("item.total", "105,000", 1),
+    ]
+    v = verify(Extraction(fields, second_of(fields)), RECEIPT)
+    failed = [r for r in v.rules if r.outcome == "fails"]
+    assert [r.detail for r in failed] == ["735,000 ≠ 105,000"] and "×" in failed[0].rule
+    assert any("does not hold (735,000 ≠ 105,000)" in x for x in v.decisions[1].reasons)

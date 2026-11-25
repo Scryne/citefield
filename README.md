@@ -80,7 +80,7 @@ Python 3.11 or newer. OCR runs on the CPU (RapidOCR); no GPU is needed unless yo
 |---|---|---|
 | Anthropic (default) | `ANTHROPIC_API_KEY`, optionally `CITEFIELD_MODEL=claude-haiku-5-5` | Sonnet is the reference. Haiku is about 20x cheaper; on the tuning slice it read receipt values better (97.1%) but put fewer boxes on the right words (91.7%). |
 | Any OpenAI-compatible API | `CITEFIELD_PROVIDER=openai`, `OPENAI_API_KEY`, `CITEFIELD_BASE_URL`, `CITEFIELD_MODEL` | OpenAI, OpenRouter, vLLM, NVIDIA NIM. Needs a vision model. |
-| Ollama (private mode) | `CITEFIELD_PROVIDER=ollama`, `CITEFIELD_MODEL=qwen3-vl:8b` | Nothing leaves the machine. In development `qwen3-vl:8b` matched Claude on values but put about 87% of boxes on the right words on receipts (Claude: 97%). Needs a GPU with 8 GB. Text-only models are not supported: they lose about half the values on receipts. |
+| Ollama (private mode) | `CITEFIELD_PROVIDER=ollama`, `CITEFIELD_MODEL=qwen3-vl:8b` | Nothing leaves the machine. In development `qwen3-vl:8b` matched Claude on values but put about 87% of boxes on the right words on receipts (Claude: 97%). Needs a GPU with 8 GB; on a laptop RTX 4060 one receipt takes about a minute per read. Citefield talks to Ollama's own API (not `/v1`) so it can turn the model's thinking off and size the context window: it starts at 8,192 tokens and doubles, up to 32,768, only when an answer shows the window was too small. Text-only models are not supported: they lose about half the values on receipts. |
 
 ## Using it
 
@@ -155,6 +155,8 @@ same images repeated the same misreads, while the same model without the OCR wor
 - **No login.** v1 is single-user and binds to `127.0.0.1`. Put it behind an authenticating proxy before exposing it.
 - English-language and Latin-script documents only have been measured.
 - The review UI's re-cite mode needs a mouse; editing values works from the keyboard.
+- A model answer that holds no field list (cut short, prose only) fails the document with a message instead of
+  finishing it empty; read it again from the documents list.
 - The `anthropic` provider is covered by unit tests but has not yet been run against the live API; the published
   numbers were measured through Claude Code (`--provider claude-code`, same Sonnet and Haiku models).
 

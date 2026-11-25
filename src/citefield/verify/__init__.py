@@ -114,7 +114,7 @@ def _rule_text(r: Rule) -> str:
         return f"sum of {r.of} = {r.equals}" + (f" (or {r.fallback})" if r.fallback else "")
     if r.type == "add":
         return " + ".join(r.terms) + "".join(f" - {m}" for m in r.minus) + f" = {r.equals}"
-    return " x ".join(r.factors) + f" = {r.equals} (per item)"
+    return " × ".join(r.factors) + f" = {r.equals} (per item)"
 
 
 def _check_rules(fields: list[Extracted], schema: Schema, decisions: list[Decision]) -> list[RuleResult]:
@@ -130,7 +130,8 @@ def _check_rules(fields: list[Extracted], schema: Schema, decisions: list[Decisi
         if abs(lhs - rhs) <= _tolerance(rhs):
             out.append(RuleResult(text, "holds"))
             return
-        detail = f"{lhs.normalize():f} != {rhs.normalize():f}"
+        # grouped like the UI reads them: "735,000 ≠ 105,000", not "735000 != 105000" (2026-11-25, real receipt)
+        detail = f"{lhs.normalize():,f} ≠ {rhs.normalize():,f}"
         out.append(RuleResult(text, "fails", detail))
         for i in involved:
             decisions[i].flag(f"{text} does not hold ({detail})")

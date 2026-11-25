@@ -2,7 +2,15 @@ import json
 
 import pytest
 
-from citefield.extract import build, extract, output_schema, parse_fields, primary_prompt
+from citefield.extract import (
+    UnreadableAnswer,
+    build,
+    extract,
+    output_schema,
+    parse_fields,
+    primary_prompt,
+    read_fields,
+)
 from citefield.ingest.models import Document, Page, Word
 from citefield.providers import ReadResult
 from citefield.schema import load, parse
@@ -119,6 +127,24 @@ def test_extract_runs_both_reads_and_the_second_has_no_ocr():
     ex = extract(DOC, SCHEMA, p)
     assert len(ex.reads) == 2 and sum("OCR words" in q for q in p.prompts) == 1
     assert ex.fields[0].box is not None and ex.second[0].value == "12.00" and ex.second[0].box is None
+
+
+class CutShortProvider(FakeProvider):
+    """The main read ends mid-JSON, as Ollama did with a 4096-token window (2026-11-25)."""
+
+    def read(self, prompt, images, json_schema=None):
+        if "OCR words" in prompt:
+            return ReadResult('{"fields": [{"field": "total", "value": "12.', self.model, 4000, 96)
+        return super().read(prompt, images, json_schema)
+
+
+def test_a_main_read_without_a_field_list_fails_instead_of_finishing_empty():
+    with pytest.raises(UnreadableAnswer, match="no readable list of fields"):
+        extract(DOC, SCHEMA, CutShortProvider())
+
+
+def test_read_fields_tells_an_empty_list_from_no_list():
+    assert read_fields('{"fields": []}') == [] and read_fields('{"fields": [{"field": "t"') is None
 
 
 def test_schema_validation():

@@ -50,7 +50,83 @@ def _openai(message):
         )
     )
     client = SimpleNamespace(chat=SimpleNamespace(completions=rec))
-    return OpenAICompatibleProvider("ollama", "qwen3-vl:8b", client=client), rec
+    return OpenAICompatibleProvider("openai", "some-vision-model", client=client), rec
+
+
+class OllamaClient:
+    """Answers in turn from `replies` ((status, body) pairs); the last one repeats."""
+
+    def __init__(self, status=200, body=None, replies=None):
+        self.calls, self.replies = [], replies or [(status, body or {})]
+
+    def post(self, url, json):
+        self.calls.append((url, json))
+        status, body = self.replies[min(len(self.calls), len(self.replies)) - 1]
+        return SimpleNamespace(status_code=status, content=b"x", text="", json=lambda: body)
+
+
+def test_ollama_doubles_the_window_when_the_answer_was_cut_or_the_prompt_filled_it():
+    cut = {
+        "message": {"content": '{"fields": [{"fi'},
+        "done_reason": "length",
+        "prompt_eval_count": 5000,
+        "eval_count": 3192,
+    }
+    full = {"message": {"content": "{}"}, "done_reason": "stop", "prompt_eval_count": 16380, "eval_count": 2}
+    ok = {
+        "message": {"content": '{"fields": []}'},
+        "done_reason": "stop",
+        "prompt_eval_count": 20000,
+        "eval_count": 900,
+    }
+    c = OllamaClient(replies=[(200, cut), (200, full), (200, ok)])
+    r = providers.get("ollama", client=c).read("p", [])
+    assert [b["options"]["num_ctx"] for _, b in c.calls] == [8192, 16384, 32768] and r.text == '{"fields": []}'
+
+
+def test_ollama_retries_a_refused_oversized_prompt_with_a_larger_window_and_stops_at_the_cap():
+    refused = {"error": "request (9000 tokens) exceeds the available context size (8192 tokens)"}
+    c = OllamaClient(replies=[(400, refused), (200, {"message": {"content": "{}"}, "prompt_eval_count": 9000})])
+    providers.get("ollama", client=c).read("p", [])
+    assert [b["options"]["num_ctx"] for _, b in c.calls] == [8192, 16384]
+    capped = OllamaClient(status=400, body=refused)
+    with pytest.raises(RuntimeError, match="context size"):
+        providers.get("ollama", max_ctx=16384, client=capped).read("p", [])
+    assert len(capped.calls) == 2
+
+
+def test_ollama_uses_the_native_api_with_a_context_window_large_enough_for_a_receipt():
+    """Ollama's /v1 ignores num_ctx and its default 4096 cut receipts short (2026-11-25)."""
+    c = OllamaClient(body={"message": {"content": '{"fields": []}'}, "prompt_eval_count": 4792, "eval_count": 9})
+    p = providers.get("ollama", client=c)
+    r = p.read("prompt", [b"PNG"], {"type": "object"})
+    url, body = c.calls[0]
+    assert url == "http://127.0.0.1:11434/api/chat"
+    assert body["options"]["num_ctx"] >= 8192 and body["options"]["temperature"] == 0
+    assert body["messages"][0]["images"] == [base64.b64encode(b"PNG").decode()] and body["format"] == {"type": "object"}
+    assert (r.text, r.input_tokens, r.output_tokens) == ('{"fields": []}', 4792, 9)
+
+
+def test_ollama_turns_thinking_off_and_drops_the_switch_for_a_model_without_one():
+    c = OllamaClient(body={"message": {"content": "{}"}})
+    providers.get("ollama", client=c).read("p", [])
+    assert c.calls[0][1]["think"] is False  # models.toml: qwen3-vl never answered with thinking on
+    refuses = OllamaClient(replies=[(400, {"error": '"gemma3:4b" does not support thinking'}), (200, {"message": {}})])
+    providers.get("ollama", think=False, client=refuses).read("p", [])
+    assert "think" in refuses.calls[0][1] and "think" not in refuses.calls[1][1]
+
+
+def test_ollama_accepts_an_old_v1_address_and_reads_the_thinking_channel():
+    c = OllamaClient(body={"message": {"content": "", "thinking": '{"fields": [1]}'}})
+    p = providers.get("ollama", base_url="http://gpu-box:11434/v1/", client=c)
+    assert p.read("p", []).text == '{"fields": [1]}' and c.calls[0][0] == "http://gpu-box:11434/api/chat"
+    assert c.calls[0][1]["format"] == "json"
+
+
+def test_ollama_errors_are_raised_not_read_as_an_empty_answer():
+    c = OllamaClient(status=400, body={"error": "exceeds the available context size"})
+    with pytest.raises(RuntimeError, match="context size"):
+        providers.get("ollama", client=c).read("p", [])
 
 
 def test_openai_compatible_inlines_images_and_asks_for_json():

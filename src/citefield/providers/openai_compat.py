@@ -1,7 +1,8 @@
-"""Any OpenAI-compatible chat endpoint: OpenAI, Ollama, vLLM, OpenRouter, NVIDIA NIM.
+"""Any OpenAI-compatible chat endpoint: OpenAI, vLLM, OpenRouter, NVIDIA NIM.
 
-Images go inline as base64 data URLs (Ollama accepts nothing else). JSON mode only, not json_schema: Ollama's OpenAI
-endpoint documents `response_format` but not schema enforcement, and the reader parses JSON defensively anyway.
+Ollama has its own provider (`ollama.py`): its OpenAI endpoint cannot raise the context window. Images go inline as
+base64 data URLs. JSON mode only, not json_schema: not every compatible server enforces a schema, and the reader parses
+JSON defensively anyway.
 """
 
 from __future__ import annotations

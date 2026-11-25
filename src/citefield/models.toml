@@ -5,8 +5,11 @@
 model = "claude-sonnet-5-5"   # reference quality; S1 was measured with Sonnet
 
 [providers.ollama]
-base_url = "http://127.0.0.1:11434/v1"
+base_url = "http://127.0.0.1:11434"   # native API: the OpenAI-compatible /v1 ignores num_ctx
 model = "qwen3-vl:8b"         # private mode; S3: value accuracy on par, receipt location 87%
+num_ctx = 8192                # Ollama's default 4096 cuts a receipt's prompt (~4,800 tokens) short; 16384 spills an
+max_ctx = 32768               # 8B model onto the CPU of an 8 GB GPU. The window doubles per read only when needed.
+think = false                 # qwen3-vl thinks until the output limit and never answers; off: 44 s, 16/16 on CORD
 
 [providers.claude-code]
 # Development and evaluation only: runs `claude -p` on the developer's own Claude Code login. The spikes were measured
